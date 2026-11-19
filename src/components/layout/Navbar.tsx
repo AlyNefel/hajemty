@@ -31,6 +31,12 @@ export function Logo() {
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<{ name?: string | null } | null>(null);
+
+  // Pages stay static/ISR: the signed-in state is fetched client-side.
+  useEffect(() => {
+    fetch("/api/auth/session").then((r) => r.json()).then((s) => setUser(s?.user?.id ? s.user : null)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -52,7 +58,14 @@ export function Navbar() {
             ))}
           </ul>
           <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link href="/login">Connexion</Link></Button>
+            {user ? (
+              <Link href="/compte" className="hidden items-center gap-2 rounded-full py-1 ps-1 pe-3 text-sm text-jasmine-50/80 transition hover:bg-white/5 sm:inline-flex">
+                <span className="grid size-7 place-items-center rounded-full bg-gold-400/20 text-xs font-bold text-gold-200">{user.name?.[0] ?? "?"}</span>
+                Mon compte
+              </Link>
+            ) : (
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link href="/login">Connexion</Link></Button>
+            )}
             <Button asChild size="sm" className="hidden sm:inline-flex"><Link href="/recherche">Réserver</Link></Button>
             <Button variant="glass" size="icon" className="lg:hidden" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -67,7 +80,7 @@ export function Navbar() {
                 <li key={l.href}><Link onClick={() => setOpen(false)} href={l.href} className="block rounded-2xl px-4 py-3 text-jasmine-50/85 hover:bg-white/5">{l.label}</Link></li>
               ))}
               <li className="grid grid-cols-2 gap-2 pt-2">
-                <Button asChild variant="glass"><Link href="/login">Connexion</Link></Button>
+                <Button asChild variant="glass"><Link href={user ? "/compte" : "/login"}>{user ? "Mon compte" : "Connexion"}</Link></Button>
                 <Button asChild><Link href="/recherche">Réserver</Link></Button>
               </li>
             </m.ul>

@@ -4,6 +4,7 @@ import { CATEGORIES, governorateBySlug } from "@/data/tunisia";
 import { getCenterBySlug, listCenterSlugs } from "@/lib/repositories/centers";
 import { SITE_URL } from "@/lib/utils";
 import { CenterSite } from "@/components/center/CenterSite";
+import { listCenterReviews } from "@/lib/reviews/repo";
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export const revalidate = 300;
@@ -44,6 +45,8 @@ export default async function CenterPage({ params }: Params) {
   if (!c) notFound();
 
   const url = `${SITE_URL}/center/${c.slug}`;
+  const { items, total, stats } = await listCenterReviews(c.id, { limit: 6 });
+  const reviews = { items: items.map(({ customerId: _c, bookingId: _b, ...r }) => r), total, stats };
   return (
     <>
       <JsonLd
@@ -55,7 +58,13 @@ export default async function CenterPage({ params }: Params) {
             address: { "@type": "PostalAddress", streetAddress: c.address, addressLocality: c.delegation, addressRegion: governorateBySlug(c.governorate)?.name.fr, addressCountry: "TN" },
             geo: { "@type": "GeoCoordinates", latitude: c.location.lat, longitude: c.location.lng },
             priceRange: c.priceFromMillimes < 40000 ? "$" : c.priceFromMillimes < 100000 ? "$$" : "$$$",
-            ...(c.reviewCount > 0 && { aggregateRating: { "@type": "AggregateRating", ratingValue: c.rating, reviewCount: c.reviewCount, bestRating: 5 } }),
+            ...(stats.count > 0 && {
+              aggregateRating: { "@type": "AggregateRating", ratingValue: stats.average, reviewCount: stats.count, bestRating: 5, worstRating: 1 },
+              review: items.slice(0, 5).map((r) => ({
+                "@type": "Review", author: { "@type": "Person", name: r.author }, datePublished: r.createdAt.slice(0, 10),
+                reviewBody: r.comment, reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+              })),
+            }),
             openingHoursSpecification: c.openingHours.map((h) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: DAY_SCHEMA[h.day], opens: hhmm(h.open), closes: hhmm(h.close) })),
             makesOffer: c.services.map((s) => ({ "@type": "Offer", name: s.name, price: (s.priceMillimes / 1000).toFixed(3), priceCurrency: "TND" })),
           },
@@ -69,7 +78,7 @@ export default async function CenterPage({ params }: Params) {
           },
         ]}
       />
-      <CenterSite c={c} />
+      <CenterSite c={c} reviews={reviews} />
     </>
   );
 }

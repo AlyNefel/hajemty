@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/booking/availability.test.ts",
+    "test": "node --experimental-strip-types --test src/lib/booking/availability.test.ts src/lib/search/match.test.ts src/lib/reviews/stats.test.ts",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {

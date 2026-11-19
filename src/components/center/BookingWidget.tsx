@@ -43,8 +43,16 @@ export function BookingWidget({ center }: { center: Pick<CenterView, "id" | "slu
       body: JSON.stringify({ centerId: center.id, serviceIds: [serviceId], employeeId, start: slot }),
     });
     const j = await res.json().catch(() => ({}));
-    if (res.ok) setStatus({ kind: "ok", msg: `Réservation ${j.data?.ref} confirmée !` });
-    else setStatus({ kind: "error", msg: j.error?.message ?? "Réservation impossible" });
+    if (res.status === 401) {
+      window.location.href = `/login?next=${encodeURIComponent(`/center/${center.slug}#reserver`)}`;
+      return;
+    }
+    if (res.ok) {
+      setStatus({ kind: "ok", msg: j.data?.status === "pending"
+        ? `Demande ${j.data.ref} envoyée : le salon va la confirmer.`
+        : `Réservation ${j.data?.ref} confirmée !` });
+      setSlots((cur) => cur?.filter((x) => x.start !== slot) ?? cur);
+    } else setStatus({ kind: "error", msg: j.error?.message ?? "Réservation impossible" });
   };
 
   const chip = "rounded-[var(--radius)] border px-3 py-2 text-sm transition";
@@ -55,14 +63,14 @@ export function BookingWidget({ center }: { center: Pick<CenterView, "id" | "slu
     <div className="site-card space-y-6 p-5 shadow-2xl md:p-6" id="reserver">
       <h2 className="site-display text-2xl font-semibold">Réserver</h2>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">1 · Prestation</legend>
         <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className="w-full rounded-[var(--radius)] border border-current/15 bg-transparent px-3 py-3 text-sm [&>option]:text-black">
           {center.services.map((s) => <option key={s.id} value={s.id}>{s.name} · {s.durationMin} min · {formatTND(s.priceMillimes)}</option>)}
         </select>
       </fieldset>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">2 · Professionnel</legend>
         <div className="flex flex-wrap gap-2">
           {[{ id: "any", name: "Peu importe" }, ...center.team].map((t) => (
@@ -71,7 +79,7 @@ export function BookingWidget({ center }: { center: Pick<CenterView, "id" | "slu
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">3 · Date</legend>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
           {days.map((d) => {
@@ -86,7 +94,7 @@ export function BookingWidget({ center }: { center: Pick<CenterView, "id" | "slu
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">4 · Heure</legend>
         {slots === null ? (
           <p className="flex items-center gap-2 text-sm opacity-60"><Loader2 className="size-4 animate-spin" /> Chargement des disponibilités…</p>
@@ -113,6 +121,7 @@ export function BookingWidget({ center }: { center: Pick<CenterView, "id" | "slu
               Confirmer la réservation
             </button>
             {status.msg && <p role="status" className={cn("mt-3 text-sm", status.kind === "ok" ? "text-emerald-500" : "text-rose-400")}>{status.msg}</p>}
+            {status.kind === "ok" && <a href="/compte" className="mt-2 inline-block text-sm font-semibold underline underline-offset-4">Voir mes réservations →</a>}
           </m.div>
         )}
       </AnimatePresence>

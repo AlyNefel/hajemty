@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { FlaskConical } from "lucide-react";
 import { can } from "@/lib/rbac";
 import { dashboardActor, getDashCenter, isDemo, listMyCenters } from "@/lib/dashboard/repo";
+import { listCenterReviews } from "@/lib/reviews/repo";
 import { Logo } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { BottomNav, CenterSwitcher, SideNav, type NavKey } from "@/components/dashboard/DashNav";
@@ -18,9 +19,15 @@ export default async function DashboardLayout({ children, params }: { children: 
   const [center, centers] = await Promise.all([getDashCenter(slug, actor), listMyCenters(actor)]);
   if (!center) notFound();
 
+  const ok = (p: Parameters<typeof can>[1]) => can(actor, p, { centerId: center.id });
   const items: NavKey[] = ["overview", "calendar"];
-  if (can(actor, "service.manage", { centerId: center.id })) items.push("services");
-  if (can(actor, "employee.manage", { centerId: center.id })) items.push("staff");
+  if (ok("review.reply")) items.push("reviews");
+  if (ok("analytics.read")) items.push("clients");
+  if (ok("service.manage")) items.push("services");
+  if (ok("employee.manage")) items.push("staff");
+  if (ok("center.update")) items.push("settings");
+  // Badge: reviews waiting for a reply.
+  const badges = ok("review.reply") ? { reviews: (await listCenterReviews(center.id, { filter: "unreplied", limit: 1 })).total } : {};
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
@@ -34,7 +41,7 @@ export default async function DashboardLayout({ children, params }: { children: 
           </div>
           <CenterSwitcher current={center.slug} centers={centers} />
         </div>
-        <SideNav slug={center.slug} items={items} />
+        <SideNav slug={center.slug} items={items} badges={badges} />
         {isDemo() && <DemoNote className="mt-auto" />}
       </aside>
 
@@ -46,7 +53,7 @@ export default async function DashboardLayout({ children, params }: { children: 
         {isDemo() && <DemoNote className="mx-4 mt-4 lg:hidden" />}
         <main className="px-4 py-6 sm:px-6 lg:px-10 lg:py-10">{children}</main>
       </div>
-      <BottomNav slug={center.slug} items={items} />
+      <BottomNav slug={center.slug} items={items} badges={badges} />
     </div>
   );
 }

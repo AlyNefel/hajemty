@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { CATEGORY_KEYS } from "@/data/tunisia";
 import { handle } from "@/lib/api";
-import { searchCenters } from "@/lib/repositories/centers";
+import { searchCenters, SORTS } from "@/lib/repositories/centers";
 
 const Query = z.object({
   q: z.string().max(80).optional(),
@@ -13,13 +13,16 @@ const Query = z.object({
   category: z.enum(CATEGORY_KEYS).optional(),
   gender: z.enum(["women", "men"]).optional(),
   openNow: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
-  sort: z.enum(["distance", "rating", "popular", "value"]).optional(),
+  priceMax: z.coerce.number().min(1).max(5000).optional(), // DT
+  minRating: z.coerce.number().min(1).max(5).optional(),
+  sort: z.enum(SORTS).optional(),
   limit: z.coerce.number().int().min(1).max(50).optional(),
 });
 
 export const GET = handle(async (req: NextRequest) => {
   const params = Query.parse(Object.fromEntries(req.nextUrl.searchParams));
-  const results = await searchCenters(params);
+  const { priceMax, ...rest } = params;
+  const results = await searchCenters({ ...rest, priceMaxMillimes: priceMax ? priceMax * 1000 : undefined });
   return NextResponse.json(
     { data: results, count: results.length },
     { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } },

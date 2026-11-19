@@ -9,17 +9,20 @@ import { formatTND } from "@/lib/utils";
 import { CoverArt } from "@/components/marketplace/CenterCard";
 import { Reveal } from "@/components/effects/Reveal";
 import { BookingWidget } from "./BookingWidget";
+import { ReviewsSection, type PublicReview } from "./ReviewsSection";
+import type { ReviewStats } from "@/lib/reviews/stats";
 
 const DAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
 type Props = { c: CenterView };
+export type CenterReviews = { items: PublicReview[]; total: number; stats: ReviewStats };
 
 /**
  * Theme-driven mini-site renderer (docs/12-theme-builder.md). Tokens become CSS variables, and the
  * ordered `sections` array picks which blocks render. Plan gating is re-applied at render time.
  */
-export function CenterSite({ c }: Props) {
+export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) {
   const theme = applyPlanToTheme(c.theme, c.plan, defaultTheme(c.theme.template));
   const animate = theme.tokens.animation !== "none";
   const wrap = (node: React.ReactNode, i: number) => (animate ? <Reveal key={i} delay={0.05}>{node}</Reveal> : <div key={i}>{node}</div>);
@@ -29,7 +32,7 @@ export function CenterSite({ c }: Props) {
     services: () => <Services c={c} />,
     team: () => <Team c={c} />,
     gallery: () => <Gallery c={c} />,
-    reviews: () => <Reviews c={c} />,
+    reviews: () => (reviews ? <ReviewsSection slug={c.slug} centerName={c.name} initial={reviews.items} total={reviews.total} stats={reviews.stats} /> : null),
     about: () => <About c={c} />,
     hours_location: () => <Hours c={c} />,
     promotions: () => (c.promo ? <Promo c={c} /> : null),
@@ -53,7 +56,7 @@ export function CenterSite({ c }: Props) {
             {c.name}{c.verified && <BadgeCheck className="size-7 shrink-0 text-[var(--c-primary)]" aria-label="Établissement vérifié" />}
           </h1>
           <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--c-muted)]">
-            <span>★ <strong className="text-[var(--c-text)]">{c.rating.toFixed(1)}</strong> ({c.reviewCount} avis)</span>
+            <a href="#avis" className="hover:underline">★ <strong className="text-[var(--c-text)]">{c.reviewCount ? c.rating.toFixed(1) : "Nouveau"}</strong> ({c.reviewCount} avis)</a>
             <span className="flex items-center gap-1"><MapPin className="size-4" /> {c.delegation}, {governorateBySlug(c.governorate)?.name.fr}</span>
             <span>{c.followerCount.toLocaleString("fr-FR")} abonnés</span>
           </p>
@@ -67,7 +70,7 @@ export function CenterSite({ c }: Props) {
         </div>
       </header>
 
-      <div className="container-lux grid gap-10 pb-24 lg:grid-cols-[1fr_400px]">
+      <div className="container-lux grid grid-cols-[minmax(0,1fr)] gap-10 pb-24 lg:grid-cols-[minmax(0,1fr)_400px]">
         <main className="space-y-14">
           {theme.sections.filter((s) => s.visible).map((s, i) => {
             const node = RENDER[s.type]?.();
@@ -138,24 +141,6 @@ function Gallery({ c }: Props) {
         ))}
       </div>
       <p className="mt-3 text-xs text-[var(--c-muted)]">Galerie de démonstration. Les photos sont servies par Cloudinary en production.</p>
-    </section>
-  );
-}
-
-function Reviews({ c }: Props) {
-  if (!c.reviews.length) return null;
-  return (
-    <section>
-      <H2>Avis vérifiés</H2>
-      <div className="grid gap-4 md:grid-cols-2">
-        {c.reviews.map((r) => (
-          <figure key={r.author} className="site-card p-5">
-            <p className="text-[var(--c-primary)]">{"★".repeat(r.rating)}<span className="opacity-30">{"★".repeat(5 - r.rating)}</span></p>
-            <blockquote className="mt-2">{r.comment}</blockquote>
-            <figcaption className="mt-3 text-sm text-[var(--c-muted)]">{r.author} · {r.service}</figcaption>
-          </figure>
-        ))}
-      </div>
     </section>
   );
 }

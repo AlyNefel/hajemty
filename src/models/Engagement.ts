@@ -7,6 +7,10 @@ const ReviewSchema = new Schema(
     bookingId: { type: Schema.Types.ObjectId, ref: "Booking", required: true },
     customerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     employeeId: { type: Schema.Types.ObjectId, ref: "Employee" },
+    // Snapshots: the review must read the same even if the customer renames or the service is retired.
+    authorName: { type: String, required: true },
+    serviceName: String,
+    employeeName: String,
     rating: { type: Number, min: 1, max: 5, required: true },
     subRatings: { quality: Number, cleanliness: Number, welcome: Number, value: Number, punctuality: Number },
     comment: { type: String, maxlength: 2000 },
@@ -19,6 +23,8 @@ const ReviewSchema = new Schema(
 );
 ReviewSchema.index({ bookingId: 1 }, { unique: true });
 ReviewSchema.index({ centerId: 1, status: 1, createdAt: -1 });
+ReviewSchema.index({ customerId: 1, createdAt: -1 });
+ReviewSchema.index({ status: 1, rating: -1, createdAt: -1 }); // homepage testimonials
 
 /* ---------- Chat ---------- */
 const ConversationSchema = new Schema(

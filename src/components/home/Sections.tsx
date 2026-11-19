@@ -101,19 +101,22 @@ export function Professionals() {
   );
 }
 
-export function Testimonials() {
-  const reviews = DEMO_CENTERS.flatMap((c) => c.reviews.map((r) => ({ ...r, center: c.name }))).slice(0, 6);
+export function Testimonials({ reviews }: { reviews: { id: string; author: string; rating: number; comment: string; service: string; centerName: string; centerSlug: string }[] }) {
+  if (!reviews.length) return null;
   return (
     <Section className="overflow-hidden">
-      <SectionHeading eyebrow="Ils nous font confiance" title="Des milliers de moments de beauté" align="center" />
+      <SectionHeading eyebrow="Avis vérifiés" title="Des milliers de moments de beauté" lede="Uniquement des clients ayant réellement réservé et réalisé leur prestation." align="center" />
       <Stagger className="columns-1 gap-5 sm:columns-2 lg:columns-3 [&>*]:mb-5 [&>*]:break-inside-avoid">
         {reviews.map((r) => (
-          <StaggerItem key={r.author + r.date}>
+          <StaggerItem key={r.id}>
             <figure className="glass rounded-3xl p-6">
               <Quote className="size-6 text-gold-400/60" />
               <blockquote className="mt-3 text-base leading-relaxed text-jasmine-50/85">{r.comment}</blockquote>
-              <figcaption className="mt-5 flex items-center justify-between">
-                <span><span className="block text-sm font-semibold">{r.author}</span><span className="text-xs text-jasmine-50/50">{r.service} · {r.center}</span></span>
+              <figcaption className="mt-5 flex items-center justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{r.author}</span>
+                  <Link href={`/center/${r.centerSlug}#avis`} className="block truncate text-xs text-jasmine-50/50 hover:text-gold-300">{r.service} · {r.centerName}</Link>
+                </span>
                 <RatingStars value={r.rating} size={12} />
               </figcaption>
             </figure>

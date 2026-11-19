@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Pencil, Plus } from "lucide-react";
 import type { DayHours } from "@/lib/booking/availability";
 import { saveStaffAction } from "@/lib/dashboard/actions";
-import { fmtMinutes, parseHHMM, WEEK_ORDER, WEEKDAYS_FR } from "@/lib/dashboard/dates";
+import { fmtMinutes, WEEK_ORDER, WEEKDAYS_FR } from "@/lib/dashboard/dates";
 import type { DashService, DashStaff } from "@/lib/dashboard/types";
 import type { Plan } from "@/lib/plans";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, FormError, Input, Switch } from "@/components/ui/field";
+import { fromRows, HoursEditor, toRows, type WeekRows } from "./HoursEditor";
 
 const COLORS = ["#e5c07b", "#d97a86", "#7cc6c2", "#a78bfa", "#f4a261", "#8bc0c9", "#9ccc65", "#f06292"];
 type Editing = DashStaff | "new" | null;
@@ -25,8 +26,9 @@ function hoursSummary(wh: DayHours[]) {
   return same ? `${names} · ${fmtMinutes(first.open)}–${fmtMinutes(first.close)}` : `${days.length} jours / semaine`;
 }
 
-export function StaffManager({ slug, staff, services, plan, limit, centerHours }: {
+export function StaffManager({ slug, staff, services, plan, limit, centerHours, ratings = {} }: {
   slug: string; staff: DashStaff[]; services: DashService[]; plan: Plan; limit: number | null; centerHours: DayHours[];
+  ratings?: Record<string, { average: number; count: number }>;
 }) {
   const [editing, setEditing] = useState<Editing>(null);
   const atLimit = limit != null && staff.length >= limit;
@@ -64,6 +66,7 @@ export function StaffManager({ slug, staff, services, plan, limit, centerHours }
             <div className="mt-4 space-y-1.5 text-sm text-jasmine-50/65">
               <p>{hoursSummary(e.workingHours)}</p>
               <p>{e.serviceIds.filter((id) => services.some((s) => s.id === id)).length} / {services.length} prestations</p>
+              <p>{ratings[e.id] ? <><span className="text-gold-300">★ {ratings[e.id].average.toFixed(1)}</span> · {ratings[e.id].count} avis client{ratings[e.id].count > 1 ? "s" : ""}</> : "Pas encore d'avis"}</p>
             </div>
             <div className="mt-4">{e.isBookable ? <Badge variant="success">Réservable en ligne</Badge> : <Badge variant="glass">Masqué</Badge>}</div>
           </li>
@@ -75,7 +78,6 @@ export function StaffManager({ slug, staff, services, plan, limit, centerHours }
   );
 }
 
-type DayRow = { on: boolean; open: string; close: string };
 
 function StaffDialog({ slug, editing, services, centerHours, onClose }: {
   slug: string; editing: Editing; services: DashService[]; centerHours: DayHours[]; onClose: () => void;
@@ -85,7 +87,7 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
   const [color, setColor] = useState(COLORS[0]);
   const [bookable, setBookable] = useState(true);
   const [serviceIds, setServiceIds] = useState<string[]>([]);
-  const [days, setDays] = useState<Record<number, DayRow>>({});
+  const [days, setDays] = useState<WeekRows>({});
   const e = editing && editing !== "new" ? editing : null;
 
   useEffect(() => {
@@ -95,11 +97,7 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
     setBookable(e?.isBookable ?? true);
     setServiceIds(e?.serviceIds ?? services.map((s) => s.id));
     // A new staff member defaults to the center's opening hours.
-    const base = e?.workingHours ?? centerHours;
-    setDays(Object.fromEntries(WEEK_ORDER.map((d) => {
-      const h = base.find((x) => x.day === d);
-      return [d, { on: !!h, open: fmtMinutes(h?.open ?? 9 * 60), close: fmtMinutes(h?.close ?? 19 * 60) }];
-    })));
+    setDays(toRows(e?.workingHours ?? centerHours));
   }, [editing, e, services, centerHours]);
 
   const submit = (form: FormData) =>
@@ -109,13 +107,12 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
         name: String(form.get("name")),
         title: String(form.get("title") ?? ""),
         color, isBookable: bookable, serviceIds,
-        workingHours: WEEK_ORDER.filter((d) => days[d]?.on).map((d) => ({ day: d, open: parseHHMM(days[d].open), close: parseHHMM(days[d].close) })),
+        workingHours: fromRows(days),
       });
       if (r.ok) onClose();
       else setError(r.error);
     });
 
-  const setDay = (d: number, patch: Partial<DayRow>) => setDays((x) => ({ ...x, [d]: { ...x[d], ...patch } }));
 
   return (
     <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
@@ -126,7 +123,7 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
             <Field label="Spécialité"><Input name="title" defaultValue={e?.title} maxLength={60} placeholder="Coloriste, barbier…" /></Field>
           </div>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="mb-2 text-xs font-semibold tracking-wide text-jasmine-50/70">Couleur dans l&apos;agenda</legend>
             <div className="flex flex-wrap gap-2">
               {COLORS.map((c) => (
@@ -136,34 +133,12 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
             </div>
           </fieldset>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="mb-2 text-xs font-semibold tracking-wide text-jasmine-50/70">Horaires de travail</legend>
-            <ul className="space-y-1.5">
-              {WEEK_ORDER.map((d) => {
-                const row = days[d];
-                if (!row) return null;
-                return (
-                  <li key={d} className="grid grid-cols-[auto_1fr] items-center gap-3 rounded-xl bg-white/[0.03] px-3 py-2 sm:grid-cols-[110px_1fr]">
-                    <label className="flex items-center gap-2.5 text-sm">
-                      <Switch checked={row.on} onChange={(v) => setDay(d, { on: v })} label={`Travaille le ${WEEKDAYS_FR[d]}`} />
-                      <span className="w-9 sm:w-auto">{WEEKDAYS_FR[d].slice(0, 3)}<span className="hidden sm:inline">{WEEKDAYS_FR[d].slice(3)}</span></span>
-                    </label>
-                    {row.on ? (
-                      <div className="flex items-center gap-2">
-                        <Input type="time" step={900} value={row.open} onChange={(ev) => setDay(d, { open: ev.target.value })} aria-label={`Début ${WEEKDAYS_FR[d]}`} className="py-1.5" />
-                        <span className="text-jasmine-50/40">–</span>
-                        <Input type="time" step={900} value={row.close} onChange={(ev) => setDay(d, { close: ev.target.value })} aria-label={`Fin ${WEEKDAYS_FR[d]}`} className="py-1.5" />
-                      </div>
-                    ) : (
-                      <span className="text-sm text-jasmine-50/40">Repos</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <HoursEditor value={days} onChange={setDays} />
           </fieldset>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <div className="mb-2 flex items-center justify-between">
               <legend className="text-xs font-semibold tracking-wide text-jasmine-50/70">Prestations réalisées</legend>
               <button type="button" className="text-xs text-gold-300 hover:underline"

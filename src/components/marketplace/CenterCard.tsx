@@ -48,11 +48,20 @@ export function CenterCard({ c }: { c: CenterCardView }) {
           <p className="mt-1 flex items-center gap-1 text-sm text-jasmine-50/60">
             <MapPin className="size-3.5" /> {c.delegation}, {governorateBySlug(c.governorate)?.name.fr}
           </p>
+          {c.matchedService && (
+            <p className="mt-2 truncate rounded-lg bg-gold-400/10 px-2.5 py-1 text-xs text-gold-200">✓ {c.matchedService}</p>
+          )}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-white/10 pt-4">
             <span className="flex items-center gap-1.5 text-sm whitespace-nowrap">
-              <RatingStars value={c.rating} />
-              <span className="font-semibold">{c.rating.toFixed(1)}</span>
-              <span className="text-jasmine-50/50">({c.reviewCount})</span>
+              {c.reviewCount > 0 ? (
+                <>
+                  <RatingStars value={c.rating} />
+                  <span className="font-semibold">{c.rating.toFixed(1)}</span>
+                  <span className="text-jasmine-50/50">({c.reviewCount})</span>
+                </>
+              ) : (
+                <span className="text-jasmine-50/50">Nouveau · pas encore d&apos;avis</span>
+              )}
             </span>
             <span className="text-sm whitespace-nowrap text-jasmine-50/60">dès <strong className="text-gold-300">{formatTND(c.priceFromMillimes)}</strong></span>
           </div>

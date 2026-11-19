@@ -18,10 +18,13 @@ export const authConfig = {
   session: { strategy: "jwt", maxAge: 30 * 24 * 3600 },
   pages: { signIn: "/login" },
   trustHost: true,
+  // Demo mode (no database) falls back to a fixed secret so the app runs with zero setup. Sessions then
+  // only ever unlock fictitious demo data. With a database, AUTH_SECRET is mandatory (Auth.js throws).
+  secret: process.env.AUTH_SECRET ?? (process.env.MONGODB_URI ? undefined : "hajemti-demo-mode-secret-not-for-production"),
   callbacks: {
     session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub ?? "";
+        session.user.id = token.revoked ? "" : (token.sub ?? "");
         session.user.role = (token.role as Role) ?? "CUSTOMER";
         session.user.memberships = (token.memberships as Membership[]) ?? [];
       }

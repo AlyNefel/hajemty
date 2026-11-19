@@ -57,7 +57,17 @@ npm run seed
 | `/dashboard/[center]` | Today's KPIs (bookings, expected revenue (owner only), occupancy, pending), upcoming appointments, top services |
 | `…/calendar?date=` | Resource day view (one column per staff), week strip with counts, click a booking → confirm / check-in / complete / no-show / cancel, click an empty slot → phone or walk-in booking |
 | `…/services` | Create / edit / activate / delete services, grouped by category; changes appear on the public page |
-| `…/staff` | Team members, colors, weekly hours, which services they perform, online bookability; plan staff limit enforced |
+| `…/staff` | Team members, colors, weekly hours, which services they perform, online bookability, per-staff rating; plan staff limit enforced |
+| `…/reviews` | Rating stats & distribution, response rate, filters (unreplied / ≤3★ / flagged), public replies with templates, report abusive reviews |
+| `…/clients` | CRM derived from bookings: visits, spend (owner only), last/next visit, no-shows, favorite service, search & sort, call/WhatsApp |
+| `…/settings` | Public profile (description, address, phone, WhatsApp, Instagram), opening hours, booking rules (auto-confirm, notice, cancellation window, slot interval) |
+
+## Customers, reviews & search
+
+- **Accounts:** email + password (scrypt-hashed) at `/inscription` and `/login`, Google/Facebook/Apple when keys are set, and a one-click demo customer in demo mode.
+- **`/compte`:** upcoming and past bookings, cancellation (before the start time), loyalty points and tier (1 pt/DT + 50/review), and "Donner mon avis".
+- **Verified reviews** (`src/lib/reviews`): only the customer of a completed booking can review it, once (unique per booking), within 60 days. Center and staff ratings are recomputed from the reviews and never set by hand. The public page shows the average, a clickable star histogram, paginated reviews with owner replies, and JSON-LD `Review` + `AggregateRating`.
+- **Search** (`src/lib/search/match.ts`): accent-insensitive, prefix and stem matching ("coiffeur" ↔ "coiffure"), one-typo tolerance ("hamam" → "hammam"), multi-word AND, weighted relevance (name > services > category > place), and category keywords. Filters: category, governorate, open now, women/men, price ≤ X DT, rating ≥ 4/4.5, GPS radius. Sort: relevance, rating (Bayesian), popularity, price, distance. The autocomplete (`/api/search/suggest`) suggests salons, services, categories and places, with full keyboard navigation.
 
 Code: `src/app/dashboard`, `src/components/dashboard`, `src/lib/dashboard` (`repo.ts` = data access, `actions.ts` = Server Actions with zod + RBAC + audit log).
 

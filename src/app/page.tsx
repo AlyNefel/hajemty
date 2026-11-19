@@ -1,5 +1,6 @@
 import { FAQ_ITEMS } from "@/data/faq";
 import { searchCenters } from "@/lib/repositories/centers";
+import { featuredReviews } from "@/lib/reviews/repo";
 import { SITE_URL } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -14,9 +15,10 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   // Default "nearby" = Grand Tunis center, until the visitor shares their GPS position.
-  const [nearby, top] = await Promise.all([
+  const [nearby, top, testimonials] = await Promise.all([
     searchCenters({ lat: 36.8065, lng: 10.1815, sort: "distance", limit: 8 }),
     searchCenters({ sort: "rating", limit: 6 }),
+    featuredReviews(6),
   ]);
 
   return (
@@ -45,7 +47,7 @@ export default async function HomePage() {
         <TrendingServices />
         <Promotions />
         <Professionals />
-        <Testimonials />
+        <Testimonials reviews={testimonials} />
         <Loyalty />
         <BecomePartner />
         <AppPreview />

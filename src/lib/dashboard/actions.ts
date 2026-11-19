@@ -6,8 +6,9 @@ import { ACTION_LABEL, BOOKING_STATUSES } from "@/lib/booking/status";
 import { authorize, ForbiddenError, type Actor, type CenterPermission } from "@/lib/rbac";
 import {
   audit, createStaffBooking, dashboardActor, DashError, deleteService, getBookingEmployee, getDashCenter,
-  saveService, saveStaff, setBookingStatus,
+  saveService, saveSettings, saveStaff, setBookingStatus,
 } from "./repo";
+import { replyToReview, ReviewError, setReviewFlag } from "@/lib/reviews/repo";
 import type { ActionResult, DashCenter } from "./types";
 
 /**
@@ -28,7 +29,7 @@ async function run<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
   try {
     return { ok: true, data: await fn() };
   } catch (e) {
-    if (e instanceof DashError) return { ok: false, error: e.message };
+    if (e instanceof DashError || e instanceof ReviewError) return { ok: false, error: e.message };
     if (e instanceof ForbiddenError) return { ok: false, error: "Vous n'avez pas les droits pour cette action" };
     if (e instanceof z.ZodError) return { ok: false, error: e.issues[0]?.message ?? "Données invalides" };
     console.error(e);
@@ -142,5 +143,60 @@ export async function createWalkInAction(centerSlug: string, input: z.input<type
     audit(actor, "booking.create_staff", center.id, { type: "booking", id: created });
     refresh(center.slug);
     return created;
+  });
+}
+
+/* ------------------------------------------------------------------ reviews */
+
+const ReplySchema = z.object({ reviewId: id, text: z.string().trim().max(1000, "1000 caractères maximum") });
+
+export async function replyReviewAction(centerSlug: string, input: z.input<typeof ReplySchema>) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "review.reply");
+    const data = ReplySchema.parse(input);
+    await replyToReview(center.id, data.reviewId, data.text || null);
+    audit(actor, data.text ? "review.reply" : "review.reply_delete", center.id, { type: "review", id: data.reviewId });
+    refresh(center.slug, true);
+  });
+}
+
+export async function flagReviewAction(centerSlug: string, input: { reviewId: string; flagged: boolean }) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "review.reply");
+    const reviewId = id.parse(input.reviewId);
+    await setReviewFlag(center.id, reviewId, z.boolean().parse(input.flagged));
+    audit(actor, input.flagged ? "review.flag" : "review.unflag", center.id, { type: "review", id: reviewId });
+    refresh(center.slug);
+  });
+}
+
+/* ------------------------------------------------------------------ settings */
+
+const phone = z.string().trim().regex(/^(\+?216)?[\s.]?\d{2}[\s.]?\d{3}[\s.]?\d{3}$/, "Numéro tunisien invalide (8 chiffres)");
+const SettingsSchema = z.object({
+  description: z.string().trim().max(1200, "Description trop longue (1200 caractères max)"),
+  phone,
+  whatsapp: phone,
+  instagram: z.string().trim().regex(/^[\w.]{0,30}$/, "Nom Instagram invalide (sans @ ni lien)").optional().transform((v) => v || undefined),
+  addressLine: z.string().trim().min(3, "Adresse requise").max(160),
+  delegation: z.string().trim().min(2, "Délégation requise").max(60),
+  openingHours: z
+    .array(z.object({ day: z.number().int().min(0).max(6), open: minutes, close: minutes }))
+    .max(7)
+    .refine((hs) => hs.every((h) => h.open < h.close), "L'heure de fermeture doit suivre l'ouverture")
+    .refine((hs) => new Set(hs.map((h) => h.day)).size === hs.length, "Jour en double"),
+  autoConfirm: z.boolean(),
+  minNoticeMin: z.number().int().min(0).max(2880),
+  cancellationWindowMin: z.number().int().min(0).max(2880),
+  slotStepMin: z.number().int().refine((v) => [5, 10, 15, 20, 30, 60].includes(v), "Intervalle invalide"),
+});
+
+export async function saveSettingsAction(centerSlug: string, input: z.input<typeof SettingsSchema>) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "center.update");
+    const data = SettingsSchema.parse(input);
+    await saveSettings(center.id, { ...data, openingHours: data.openingHours.map((h) => ({ ...h, breaks: [] })) });
+    audit(actor, "center.settings", center.id, { type: "center", id: center.id });
+    refresh(center.slug, true);
   });
 }

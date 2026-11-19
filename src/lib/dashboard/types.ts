@@ -48,6 +48,7 @@ export type DashBooking = {
   end: string;
   status: BookingStatus;
   source: "web" | "app" | "whatsapp" | "walk_in" | "owner_dashboard";
+  customerId?: string;
   customerName: string;
   customerPhone?: string;
   items: { name: string; durationMin: number; priceMillimes: number }[];
@@ -56,3 +57,34 @@ export type DashBooking = {
 };
 
 export type ActionResult<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
+
+export type ReviewView = {
+  id: string;
+  bookingId: string;
+  centerId: string;
+  customerId?: string;
+  author: string;
+  rating: number;
+  comment: string;
+  service: string;
+  employeeId?: string;
+  employeeName?: string;
+  createdAt: string;
+  reply?: { text: string; at: string };
+  status: "visible" | "flagged" | "hidden";
+};
+
+/** Editable center profile & booking rules (dashboard → Paramètres). */
+export type CenterSettings = {
+  description: string;
+  phone: string;
+  whatsapp: string;
+  instagram?: string;
+  addressLine: string;
+  delegation: string;
+  openingHours: DayHours[];
+  autoConfirm: boolean;
+  minNoticeMin: number;
+  cancellationWindowMin: number;
+  slotStepMin: number;
+};

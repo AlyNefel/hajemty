@@ -64,18 +64,18 @@ export const GOVERNORATES: Governorate[] = [
 export const governorateBySlug = (slug: string) => GOVERNORATES.find((g) => g.slug === slug);
 
 export const CATEGORIES = [
-  { key: "beauty_center", fr: "Institut de beauté", ar: "مركز تجميل", slug: "institut-beaute", icon: "Sparkles" },
-  { key: "hair_salon", fr: "Salon de coiffure", ar: "صالون حلاقة", slug: "coiffeur", icon: "Scissors" },
-  { key: "women_salon", fr: "Salon femme", ar: "صالون نسائي", slug: "salon-femme", icon: "Flower2" },
-  { key: "barbershop", fr: "Barbier", ar: "حلاق رجالي", slug: "barbier", icon: "Scissors" },
-  { key: "nail_studio", fr: "Onglerie", ar: "أظافر", slug: "onglerie", icon: "Hand" },
-  { key: "makeup_artist", fr: "Maquilleuse", ar: "خبيرة مكياج", slug: "maquillage", icon: "Brush" },
-  { key: "spa", fr: "Spa", ar: "سبا", slug: "spa", icon: "Waves" },
-  { key: "hammam", fr: "Hammam", ar: "حمام", slug: "hammam", icon: "Droplets" },
-  { key: "wellness", fr: "Bien-être", ar: "عافية", slug: "bien-etre", icon: "Leaf" },
-  { key: "laser", fr: "Centre laser", ar: "ليزر", slug: "laser", icon: "Zap" },
-  { key: "aesthetic_clinic", fr: "Clinique esthétique", ar: "عيادة تجميل", slug: "centre-esthetique", icon: "Stethoscope" },
-  { key: "freelancer", fr: "Pro à domicile", ar: "خدمة منزلية", slug: "a-domicile", icon: "Home" },
+  { key: "beauty_center", keywords: "institut esthetique esthéticienne soin visage beauté épilation", fr: "Institut de beauté", ar: "مركز تجميل", slug: "institut-beaute", icon: "Sparkles" },
+  { key: "hair_salon", keywords: "coiffeur coiffeuse coiffure cheveux brushing coupe couleur balayage lissage kératine", fr: "Salon de coiffure", ar: "صالون حلاقة", slug: "coiffeur", icon: "Scissors" },
+  { key: "women_salon", keywords: "femme femmes dames coiffeur coiffeuse coiffure brushing", fr: "Salon femme", ar: "صالون نسائي", slug: "salon-femme", icon: "Flower2" },
+  { key: "barbershop", keywords: "barbier barber barbe coiffeur homme hommes rasage dégradé coupe", fr: "Barbier", ar: "حلاق رجالي", slug: "barbier", icon: "Scissors" },
+  { key: "nail_studio", keywords: "ongles onglerie manucure pédicure nail vernis gel capsules semi-permanent", fr: "Onglerie", ar: "أظافر", slug: "onglerie", icon: "Hand" },
+  { key: "makeup_artist", keywords: "maquillage maquilleuse makeup mariée mariage soirée henné outia", fr: "Maquilleuse", ar: "خبيرة مكياج", slug: "maquillage", icon: "Brush" },
+  { key: "spa", keywords: "spa massage détente relaxation sauna", fr: "Spa", ar: "سبا", slug: "spa", icon: "Waves" },
+  { key: "hammam", keywords: "hammam gommage kessa savon noir", fr: "Hammam", ar: "حمام", slug: "hammam", icon: "Droplets" },
+  { key: "wellness", keywords: "bien-être yoga massage relaxation", fr: "Bien-être", ar: "عافية", slug: "bien-etre", icon: "Leaf" },
+  { key: "laser", keywords: "laser épilation définitive", fr: "Centre laser", ar: "ليزر", slug: "laser", icon: "Zap" },
+  { key: "aesthetic_clinic", keywords: "clinique esthétique médecin botox injection hydrafacial", fr: "Clinique esthétique", ar: "عيادة تجميل", slug: "centre-esthetique", icon: "Stethoscope" },
+  { key: "freelancer", keywords: "domicile freelance déplacement", fr: "Pro à domicile", ar: "خدمة منزلية", slug: "a-domicile", icon: "Home" },
 ] as const;
 
 export type CategoryKey = (typeof CATEGORIES)[number]["key"];

@@ -12,10 +12,10 @@ import type { Actor } from "@/lib/rbac";
 import { Booking } from "@/models/Booking";
 import { Center } from "@/models/Center";
 import { Employee, Service } from "@/models/Catalog";
-import { AuditLog } from "@/models/Engagement";
+import { AuditLog, Review } from "@/models/Engagement";
 import { addDays, localToIso, tunisDateOf } from "./dates";
 import { demoStore } from "./demo-store";
-import type { DashBooking, DashCenter, DashService, DashStaff } from "./types";
+import type { CenterSettings, DashBooking, DashCenter, DashService, DashStaff } from "./types";
 
 export const isDemo = () => !hasDatabase();
 
@@ -42,7 +42,8 @@ export async function getDashCenter(slug: string, actor: Actor): Promise<DashCen
   if (isDemo()) {
     const c = DEMO_CENTERS.find((x) => x.slug === slug);
     if (!c) return null;
-    return { id: c.id, slug: c.slug, name: c.name, plan: c.plan, palette: c.palette, openingHours: c.openingHours, slotStepMin: 15, autoConfirm: true, myRole: "OWNER" };
+    const st = demoStore(c.id).settings;
+    return { id: c.id, slug: c.slug, name: c.name, plan: c.plan, palette: c.palette, openingHours: st.openingHours, slotStepMin: st.slotStepMin, autoConfirm: st.autoConfirm, myRole: "OWNER" };
   }
   await connectDB();
   const c = await Center.findOne({ slug, deletedAt: null }).lean();
@@ -234,9 +235,8 @@ export async function createStaffBooking(centerId: string, input: WalkInInput, a
     const employee = s.staff.find((x) => x.id === input.employeeId);
     if (!service || !employee) throw new DashError("Prestation ou collaborateur invalide");
     if (!employee.serviceIds.includes(service.id)) throw new DashError(`${employee.name} ne réalise pas cette prestation`);
-    const c = DEMO_CENTERS.find((x) => x.id === centerId)!;
     const slots = computeAvailability({
-      date, centerHours: c.openingHours, stepMin: 5, minNoticeMin: 0, now: new Date(0), // any free 5-min boundary
+      date, centerHours: s.settings.openingHours, stepMin: 5, minNoticeMin: 0, now: new Date(0), // any free 5-min boundary
       employees: [{ id: employee.id, workingHours: employee.workingHours }],
       busy: s.bookings.filter((b) => b.employeeId === employee.id && isActive(b.status)),
       durationMin: service.durationMin + service.bufferAfterMin,
@@ -267,16 +267,17 @@ export async function createStaffBooking(centerId: string, input: WalkInInput, a
 /** Public availability in demo mode, computed from the demo store so dashboard edits show up on the site. */
 export function demoAvailability(centerId: string, serviceIds: string[], date: string, employeeId?: string) {
   const s = demoStore(centerId);
-  const c = DEMO_CENTERS.find((x) => x.id === centerId)!;
   const services = s.services.filter((x) => serviceIds.includes(x.id) && x.isActive);
   if (services.length !== serviceIds.length) return null;
   return computeAvailability({
-    date, centerHours: c.openingHours,
+    date, centerHours: s.settings.openingHours,
     employees: s.staff
       .filter((e) => e.isBookable && serviceIds.every((id) => e.serviceIds.includes(id)) && (!employeeId || e.id === employeeId))
       .map((e) => ({ id: e.id, workingHours: e.workingHours })),
     busy: s.bookings.filter((b) => isActive(b.status)),
     durationMin: services.reduce((sum, x) => sum + x.durationMin + x.bufferAfterMin, 0),
+    stepMin: s.settings.slotStepMin,
+    minNoticeMin: s.settings.minNoticeMin,
   });
 }
 
@@ -292,3 +293,94 @@ export function audit(actor: Actor, action: string, centerId: string, resource: 
   });
 }
 
+
+/* ------------------------------------------------------------------ settings */
+
+export async function getSettings(centerId: string): Promise<CenterSettings> {
+  if (isDemo()) return structuredClone(demoStore(centerId).settings);
+  await connectDB();
+  const c = await Center.findById(centerId).lean();
+  if (!c) throw new DashError("Établissement introuvable");
+  return {
+    description: c.description?.fr ?? "", phone: c.contact?.phone ?? "", whatsapp: c.contact?.whatsapp ?? "",
+    instagram: c.contact?.instagram ?? undefined, addressLine: c.address?.line1 ?? "", delegation: c.address?.delegation ?? "",
+    openingHours: (c.openingHours ?? []) as CenterSettings["openingHours"],
+    autoConfirm: c.bookingSettings?.autoConfirm ?? true, minNoticeMin: c.bookingSettings?.minNoticeMin ?? 60,
+    cancellationWindowMin: c.bookingSettings?.cancellationWindowMin ?? 240, slotStepMin: c.bookingSettings?.slotStepMin ?? 15,
+  };
+}
+
+export async function saveSettings(centerId: string, s: CenterSettings) {
+  if (isDemo()) {
+    demoStore(centerId).settings = structuredClone(s);
+    return;
+  }
+  await connectDB();
+  await Center.updateOne({ _id: centerId }, {
+    $set: {
+      "description.fr": s.description, "contact.phone": s.phone, "contact.whatsapp": s.whatsapp, "contact.instagram": s.instagram ?? "",
+      "address.line1": s.addressLine, "address.delegation": s.delegation, openingHours: s.openingHours,
+      "bookingSettings.autoConfirm": s.autoConfirm, "bookingSettings.minNoticeMin": s.minNoticeMin,
+      "bookingSettings.cancellationWindowMin": s.cancellationWindowMin, "bookingSettings.slotStepMin": s.slotStepMin,
+    },
+  });
+}
+
+/* ------------------------------------------------------------------ clients (CRM) */
+
+export type ClientRow = {
+  key: string;
+  name: string;
+  phone?: string;
+  visits: number;
+  noShows: number;
+  cancellations: number;
+  spentMillimes: number;
+  lastVisit?: string;
+  nextVisit?: string;
+  favoriteService?: string;
+};
+
+/** Customer list derived from the booking history (last 12 months + upcoming). */
+export async function listClients(center: DashCenter): Promise<ClientRow[]> {
+  const today = new Date(Date.now() + 3600_000).toISOString().slice(0, 10);
+  const bookings = await listBookings(center, addDays(today, -365), 365 + 60);
+  const now = new Date().toISOString();
+  const map = new Map<string, ClientRow & { services: Record<string, number> }>();
+  for (const b of bookings) {
+    const key = b.customerId ?? (b.customerPhone?.replace(/\D/g, "") || b.customerName.toLowerCase());
+    const row = map.get(key) ?? { key, name: b.customerName, phone: b.customerPhone, visits: 0, noShows: 0, cancellations: 0, spentMillimes: 0, services: {} };
+    if (b.status === "completed") {
+      row.visits++;
+      row.spentMillimes += b.totalMillimes;
+      if (!row.lastVisit || b.start > row.lastVisit) row.lastVisit = b.start;
+      for (const i of b.items) row.services[i.name] = (row.services[i.name] ?? 0) + 1;
+    } else if (b.status === "no_show") row.noShows++;
+    else if (b.status === "cancelled_by_customer") row.cancellations++;
+    else if (b.start > now && (b.status === "confirmed" || b.status === "pending") && (!row.nextVisit || b.start < row.nextVisit)) row.nextVisit = b.start;
+    row.phone ??= b.customerPhone;
+    map.set(key, row);
+  }
+  return [...map.values()]
+    .map(({ services, ...r }) => ({ ...r, favoriteService: Object.entries(services).sort((a, b) => b[1] - a[1])[0]?.[0] }))
+    .sort((a, b) => b.visits - a.visits || b.spentMillimes - a.spentMillimes);
+}
+
+/** Average rating per employee, derived from verified reviews. */
+export async function staffRatings(centerId: string): Promise<Record<string, { average: number; count: number }>> {
+  if (isDemo()) {
+    const out: Record<string, { sum: number; count: number }> = {};
+    for (const r of demoStore(centerId).reviews) {
+      if (!r.employeeId || r.status === "hidden") continue;
+      (out[r.employeeId] ??= { sum: 0, count: 0 }).sum += r.rating;
+      out[r.employeeId].count++;
+    }
+    return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, { average: Math.round((v.sum / v.count) * 10) / 10, count: v.count }]));
+  }
+  await connectDB();
+  const rows = await Review.aggregate<{ _id: Types.ObjectId; avg: number; n: number }>([
+    { $match: { centerId: new Types.ObjectId(centerId), status: { $ne: "hidden" }, employeeId: { $ne: null } } },
+    { $group: { _id: "$employeeId", avg: { $avg: "$rating" }, n: { $sum: 1 } } },
+  ]);
+  return Object.fromEntries(rows.map((r) => [String(r._id), { average: Math.round(r.avg * 10) / 10, count: r.n }]));
+}

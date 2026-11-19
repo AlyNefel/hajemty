@@ -4,6 +4,7 @@ import { ArrowRight, CalendarCheck, Clock, Gauge, Hourglass, Wallet } from "luci
 import { STATUS_LABEL, isCancelled } from "@/lib/booking/status";
 import { addDays, dayOfWeekOf, fmtDateLong, fmtTime, tunisDateOf, todayTunis } from "@/lib/dashboard/dates";
 import { dashboardActor, getDashCenter, listBookings, listStaff } from "@/lib/dashboard/repo";
+import { listCenterReviews } from "@/lib/reviews/repo";
 import type { DashBooking } from "@/lib/dashboard/types";
 import { can } from "@/lib/rbac";
 import { formatTND, cn } from "@/lib/utils";
@@ -19,7 +20,11 @@ export default async function Overview({ params }: Props) {
   if (!center) notFound();
 
   const today = todayTunis();
-  const [bookings, staff] = await Promise.all([listBookings(center, addDays(today, -6), 8), listStaff(center.id)]);
+  const [bookings, staff, reviews, unreplied] = await Promise.all([
+    listBookings(center, addDays(today, -6), 8), listStaff(center.id),
+    listCenterReviews(center.id, { limit: 3 }), listCenterReviews(center.id, { filter: "unreplied", limit: 1 }),
+  ]);
+  const canReply = can(actor, "review.reply", { centerId: center.id });
   const showRevenue = can(actor, "analytics.revenue", { centerId: center.id });
   const now = new Date().toISOString();
 
@@ -79,6 +84,18 @@ export default async function Overview({ params }: Props) {
           </div>
         ))}
       </section>
+
+      {canReply && reviews.stats.count > 0 && (
+        <Link href={`/dashboard/${center.slug}/reviews${unreplied.total ? "?filter=unreplied" : ""}`}
+          className="glass flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl px-5 py-4 transition hover:border-gold-400/40">
+          <span className="font-display text-3xl font-semibold">★ {reviews.stats.average.toFixed(1)}</span>
+          <span className="text-sm text-jasmine-50/60">{reviews.stats.count} avis vérifiés · {Math.round(reviews.stats.responseRate * 100)} % de réponses</span>
+          <span className="flex-1" />
+          <span className={cn("text-sm font-semibold", unreplied.total ? "text-gold-300" : "text-emerald-300")}>
+            {unreplied.total ? `${unreplied.total} avis attendent votre réponse →` : "Tous les avis ont une réponse ✓"}
+          </span>
+        </Link>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="glass rounded-2xl p-5 md:p-6">
