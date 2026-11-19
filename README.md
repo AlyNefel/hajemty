@@ -1,0 +1,67 @@
+# Hajemti · حجامتي
+
+Tunisia's beauty & wellness marketplace, covering discovery, booking, social features and a mini-website for every center.
+
+**Stack:** Next.js 15 (App Router, RSC) · React 19 · TypeScript · Tailwind CSS v4 · Framer Motion · Radix UI · MongoDB/Mongoose · Auth.js v5 · Cloudinary.
+
+## Quick start
+
+```bash
+npm install
+cp .env.example .env.local     # optional: everything works on demo data without a DB
+npm run dev                    # http://localhost:3000
+```
+
+With **no `MONGODB_URI`** the app runs on the built-in demo dataset (8 centers across Tunis, Ariana, Sousse, Sfax, Nabeul and Djerba). Browsing, search and slot availability all work, and booking returns `503 DEMO_MODE`.
+
+With a database (Atlas, or a local replica set, since booking uses transactions):
+
+```bash
+npm run seed
+```
+
+## Scripts
+| Script | |
+|---|---|
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build (pre-renders center and SEO landing pages) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Booking engine unit tests (`node:test`) |
+| `npm run seed` | Upsert the demo data into MongoDB |
+
+## What's in the box
+
+| Area | Where |
+|---|---|
+| Blueprint (all 18 deliverables) | [`docs/`](docs/README.md) |
+| Design tokens ("Jasmine & Gold") | `src/app/globals.css` |
+| UI kit & effects (glass, aurora, particles, tilt cards, counters, reveals) | `src/components/ui`, `src/components/effects` |
+| Homepage: 12 sections | `src/app/page.tsx`, `src/components/home` |
+| Center mini-site, theme-driven, with booking widget | `src/app/center/[slug]`, `src/components/center` |
+| Search + filters (GPS, governorate, category, open now, gender, sort) | `src/app/recherche` |
+| SEO landing pages `/coiffeur/tunis`, `/spa/djerba`… (288) | `src/app/[category]/[governorate]` |
+| Sitemap, robots, JSON-LD (LocalBusiness, FAQ, Breadcrumb, ItemList) | `src/app/sitemap.ts`, `robots.ts`, `components/seo` |
+| Mongoose models (users, centers, services, staff, bookings + locks, reviews, chat, social, loyalty, billing, audit) | `src/models` |
+| RBAC (roles × center memberships, resource policies) | `src/lib/rbac.ts` |
+| Plans & feature flags, theme plan-gating | `src/lib/plans.ts` |
+| Theme schema, 8 templates, CSS-variable renderer | `src/lib/theme` |
+| Booking engine: pure availability + granule-lock transactions | `src/lib/booking` |
+| Auth (Google / Facebook / Apple, JWT + role claims) | `src/auth.ts`, `src/auth.config.ts` |
+| Middleware: rate limits, CSRF origin check, RBAC gates, security headers | `src/middleware.ts` |
+| 24 governorates + delegations, 12 categories | `src/data/tunisia.ts` |
+
+## Owner dashboard — `/dashboard`
+
+| Page | What it does |
+|---|---|
+| `/dashboard/[center]` | Today's KPIs (bookings, expected revenue (owner only), occupancy, pending), upcoming appointments, top services |
+| `…/calendar?date=` | Resource day view (one column per staff), week strip with counts, click a booking → confirm / check-in / complete / no-show / cancel, click an empty slot → phone or walk-in booking |
+| `…/services` | Create / edit / activate / delete services, grouped by category; changes appear on the public page |
+| `…/staff` | Team members, colors, weekly hours, which services they perform, online bookability; plan staff limit enforced |
+
+Code: `src/app/dashboard`, `src/components/dashboard`, `src/lib/dashboard` (`repo.ts` = data access, `actions.ts` = Server Actions with zod + RBAC + audit log).
+
+**Demo mode:** without `MONGODB_URI`, `/dashboard` is open and runs on an in-memory store seeded with four weeks of fictitious bookings. You act as the owner of every demo center, and edits last until the server restarts. Never deploy publicly without `MONGODB_URI`, or the demo dashboard will be reachable by anyone (it only holds fake data, but still).
+
+## Next steps (Phase 1)
+WhatsApp/email notifications via a queue, Cloudinary signed uploads, reviews flow, Atlas Search index, Upstash rate limiting, Arabic `/ar` locale with RTL, the theme builder UI, staff invitations, and drag-and-drop rescheduling in the calendar.

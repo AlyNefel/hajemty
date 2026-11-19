@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens: "Jasmine & Gold" (docs/07-design-system.md) ---------- */
+@theme {
+  --color-noir-950: #0b0710;
+  --color-noir-900: #140d1c;
+  --color-noir-800: #1e1529;
+  --color-noir-700: #2a1f38;
+  --color-gold-200: #f7ead0;
+  --color-gold-300: #f1d9a6;
+  --color-gold-400: #e5c07b;
+  --color-gold-500: #d4a64a;
+  --color-gold-600: #b08533;
+  --color-rose-300: #f2c4c9;
+  --color-rose-400: #e8a0a8;
+  --color-rose-500: #d97a86;
+  --color-jasmine-50: #fbf8f3;
+  --color-jasmine-100: #f4eee4;
+  --color-plum-500: #7c4dbd;
+
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-manrope), "Manrope", system-ui, sans-serif;
+  --font-arabic: var(--font-kufi), "Noto Kufi Arabic", sans-serif;
+
+  --shadow-glow-gold: 0 0 40px -10px rgb(229 192 123 / 0.45);
+  --shadow-card: 0 30px 60px -30px rgb(0 0 0 / 0.6);
+
+  --animate-aurora: aurora 28s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 3.2s linear infinite;
+  --animate-float: float 9s ease-in-out infinite;
+
+  @keyframes aurora {
+    0% { transform: translate3d(-10%, -6%, 0) rotate(0deg) scale(1); }
+    50% { transform: translate3d(8%, 6%, 0) rotate(25deg) scale(1.15); }
+    100% { transform: translate3d(-4%, 10%, 0) rotate(-10deg) scale(1.05); }
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes sheet-in {
+    from { opacity: 0; transform: translate3d(0, 24px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-noir-950);
+  color: var(--color-jasmine-50);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+[dir="rtl"] body { font-family: var(--font-arabic); }
+
+::selection { background: rgb(229 192 123 / 0.35); color: #fff; }
+
+@layer components {
+  .container-lux { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 2xl:max-w-[1440px]; }
+  .glass {
+    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl;
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06), var(--shadow-card);
+  }
+  .text-gold-gradient, .text-gold-shimmer {
+    background: linear-gradient(110deg, #b08533 0%, #f7ead0 35%, #e5c07b 55%, #d4a64a 75%, #f1d9a6 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gold-shimmer { animation: var(--animate-shimmer); }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Neomorphic pill used for category chips */
+  .neo {
+    background: linear-gradient(145deg, #1a1224, #110b18);
+    box-shadow: 6px 6px 14px #07040a, -6px -6px 14px #1f1630;
+  }
+}
+
+/* Mini-site theming: CSS variables injected by themeToCssVars() */
+.site-root {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-body-site);
+}
+.site-root .site-display { font-family: var(--font-display-site); }
+.site-root .site-card { border-radius: var(--radius); background: var(--c-surface); }
+.site-root .site-btn { border-radius: var(--radius); background: var(--c-primary); color: var(--c-bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
