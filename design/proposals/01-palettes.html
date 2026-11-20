@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palette directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;600;700&family=Noto+Kufi+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Manrope,system-ui,sans-serif;background:#eee;color:#222;padding:32px 20px 80px}
+h1{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:600}
+.lead{max-width:760px;margin:8px 0 28px;color:#555;line-height:1.5}
+.dir{max-width:1180px;margin:0 auto 56px}
+.dir>header{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.dir h2{font-size:20px}
+.dir h2 small{display:block;font-weight:400;color:#666;font-size:14px;margin-top:2px}
+.tog{display:flex;border:1px solid #bbb;border-radius:99px;overflow:hidden}
+.tog button{border:0;background:#fff;padding:8px 16px;font:600 13px Manrope;cursor:pointer}
+.tog button.on{background:#222;color:#fff}
+.stage{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+@media(max-width:900px){.stage{grid-template-columns:1fr}}
+.card{background:var(--bg);color:var(--tx);border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:.3s}
+.card::before{content:"";position:absolute;inset:-30% -10% auto auto;width:70%;height:90%;background:radial-gradient(closest-side,var(--glow),transparent);opacity:.7}
+.card>*{position:relative}
+.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;display:flex;align-items:center;gap:8px}
+.logo i{width:28px;height:28px;border-radius:50%;background:var(--ac);color:var(--bg);display:grid;place-items:center;font-style:normal;font-size:15px}
+.hero{padding:44px 0 20px}
+.hero h3{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,56px);line-height:1.02;font-weight:600;max-width:520px}
+.hero h3 em{color:var(--ac)}
+.hero p{margin:14px 0 22px;max-width:440px;opacity:.75;line-height:1.5;font-size:15px}
+.paths{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border-radius:99px;padding:13px 22px;font:700 14px Manrope;border:1px solid var(--ac);cursor:default}
+.btn.p{background:var(--ac);color:var(--bg)}
+.btn.s{background:transparent;color:var(--tx)}
+.ar{margin-top:26px;font-family:'Noto Kufi Arabic',sans-serif;direction:rtl;font-size:20px;color:var(--ac)}
+.side{display:grid;gap:16px}
+.salon{padding:0;min-height:230px}
+.photo{height:130px;background:var(--pat),linear-gradient(135deg,var(--g1),var(--g2));display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-size:42px;color:var(--ac)}
+.salon .meta{padding:14px 18px 18px}
+.salon .meta b{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;border:1px solid var(--ac);color:var(--ac);border-radius:99px;padding:3px 9px;margin-right:6px}
+.salon .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;opacity:.9}
+.sw{display:flex;gap:6px;padding:0}
+.sw span{flex:1;height:54px;border-radius:12px;display:flex;align-items:end;padding:6px;font-size:10px;font-weight:700;border:1px solid rgba(128,128,128,.25)}
+.sticky{margin-top:auto;background:var(--ac);color:var(--bg);border-radius:14px;padding:14px;text-align:center;font-weight:700;font-size:14px}
+.verdict{margin-top:10px;font-size:13px;color:#555;line-height:1.5}
+
+/* Direction A: Plum & Gold (evolution of current) */
+#A.dk{--bg:#1c1022;--tx:#f8f0ea;--ac:#e0b867;--glow:rgba(150,80,190,.45);--g1:#3a1f4a;--g2:#1c1022}
+#A.lt{--bg:#faf5ee;--tx:#2a1830;--ac:#9a6b1c;--glow:rgba(200,150,230,.4);--g1:#efe2d0;--g2:#e6d3ee}
+/* Direction B: Mediterranean (terracotta, sand, deep blue) */
+#B.dk{--bg:#0f2230;--tx:#f6ece0;--ac:#e08a5c;--glow:rgba(224,138,92,.35);--g1:#1d4a5e;--g2:#0f2230}
+#B.lt{--bg:#f6ecdd;--tx:#12303f;--ac:#c4552a;--glow:rgba(224,138,92,.4);--g1:#f0cfae;--g2:#cfe0e3}
+/* Direction C: Rose & Champagne */
+#C.dk{--bg:#2a1519;--tx:#fbefe9;--ac:#e7a9a0;--glow:rgba(231,169,160,.35);--g1:#5a2a33;--g2:#2a1519}
+#C.lt{--bg:#fdf3ee;--tx:#3a1d22;--ac:#b4524b;--glow:rgba(244,190,180,.6);--g1:#f7d6cf;--g2:#f3e3c9}
+.dir{--pat:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M22 2l5 15 15 5-15 5-5 15-5-15-15-5 15-5z' fill='none' stroke='%23ffffff' stroke-opacity='.12'/%3E%3C/svg%3E")}
+</style>
+</head>
+<body>
+<div style="max-width:1180px;margin:0 auto">
+<h1>Three palette directions</h1>
+<p class="lead">Based on your answers: one safe (A, close to the current look) and two bold (B, C). Each is shown dark and light, because users will be able to switch. Pattern = subtle Tunisian-style star on the no-photo fallback. Arabic line = standard Arabic, right-to-left. Brand name here is a placeholder.</p>
+</div>
+
+<section class="dir" id="A" data-mode="dk">
+<header><h2>A · Plum &amp; Gold <small>Safe. Evolution of the current identity, aubergine instead of black.</small></h2><div class="tog"><button class="on" data-m="dk">Dark</button><button data-m="lt">Light</button></div></header>
+<div class="stage">
+<div class="card"><div class="logo"><i>h</i>Brand name</div>
+<div class="hero"><h3>Your beauty, <em>booked</em> in a gesture.</h3><p>Salons, spas and barbers near you. Real-time availability, verified reviews, confirmation on WhatsApp.</p><div class="paths"><span class="btn p">Book an appointment</span><span class="btn s">List my salon</span></div><div class="ar">جمالك، بنقرة واحدة</div></div></div>
+<div class="side"><div class="card salon"><div class="photo">NA</div><div class="meta"><span class="badge">Verified</span><span class="badge">Hygiene</span><br><b>Nails Atelier</b><div class="row"><span>★ 4.8 · Ennasr</span><span>from 35 DT</span></div></div></div>
+<div class="card sw" style="padding:14px"></div></div>
+</div></section>
+
+<section class="dir" id="B" data-mode="dk">
+<header><h2>B · Mediterranean <small>Bold. Terracotta, sand and deep blue: warm, local, unlike other beauty apps.</small></h2><div class="tog"><button class="on" data-m="dk">Dark</button><button data-m="lt">Light</button></div></header>
+<div class="stage">
+<div class="card"><div class="logo"><i>h</i>Brand name</div>
+<div class="hero"><h3>Your beauty, <em>booked</em> in a gesture.</h3><p>Salons, spas and barbers near you. Real-time availability, verified reviews, confirmation on WhatsApp.</p><div class="paths"><span class="btn p">Book an appointment</span><span class="btn s">List my salon</span></div><div class="ar">جمالك، بنقرة واحدة</div></div></div>
+<div class="side"><div class="card salon"><div class="photo">NA</div><div class="meta"><span class="badge">Verified</span><span class="badge">Hygiene</span><br><b>Nails Atelier</b><div class="row"><span>★ 4.8 · Ennasr</span><span>from 35 DT</span></div></div></div>
+<div class="card sw" style="padding:14px"></div></div>
+</div></section>
+
+<section class="dir" id="C" data-mode="dk">
+<header><h2>C · Rose &amp; Champagne <small>Bold. Soft, feminine, very nails-and-beauty; still reads premium and works for men's services in the neutral tones.</small></h2><div class="tog"><button class="on" data-m="dk">Dark</button><button data-m="lt">Light</button></div></header>
+<div class="stage">
+<div class="card"><div class="logo"><i>h</i>Brand name</div>
+<div class="hero"><h3>Your beauty, <em>booked</em> in a gesture.</h3><p>Salons, spas and barbers near you. Real-time availability, verified reviews, confirmation on WhatsApp.</p><div class="paths"><span class="btn p">Book an appointment</span><span class="btn s">List my salon</span></div><div class="ar">جمالك، بنقرة واحدة</div></div></div>
+<div class="side"><div class="card salon"><div class="photo">NA</div><div class="meta"><span class="badge">Verified</span><span class="badge">Hygiene</span><br><b>Nails Atelier</b><div class="row"><span>★ 4.8 · Ennasr</span><span>from 35 DT</span></div></div></div>
+<div class="card sw" style="padding:14px"></div></div>
+</div></section>
+
+<script>
+const sw={A:{dk:['#1c1022','#3a1f4a','#e0b867','#f8f0ea'],lt:['#faf5ee','#e6d3ee','#9a6b1c','#2a1830']},
+B:{dk:['#0f2230','#1d4a5e','#e08a5c','#f6ece0'],lt:['#f6ecdd','#cfe0e3','#c4552a','#12303f']},
+C:{dk:['#2a1519','#5a2a33','#e7a9a0','#fbefe9'],lt:['#fdf3ee','#f7d6cf','#b4524b','#3a1d22']}};
+function paint(id,m){const s=document.getElementById(id);s.dataset.mode=m;s.classList.remove('dk','lt');s.classList.add(m);
+s.querySelectorAll('.card').forEach(c=>{c.style.cssText=''});
+s.querySelector('.sw').innerHTML=sw[id][m].map(c=>`<span style="background:${c};color:${m=='dk'?'#fff':'#000'}">${c}</span>`).join('');
+s.querySelectorAll('.tog button').forEach(b=>b.classList.toggle('on',b.dataset.m==m));}
+['A','B','C'].forEach(id=>{paint(id,'dk');document.querySelectorAll('#'+id+' .tog button').forEach(b=>b.onclick=()=>paint(id,b.dataset.m));});
+</script>
+</body>
+</html>
