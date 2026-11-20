@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rosée logo directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;600;700&family=Noto+Kufi+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--bg:#fdf1ef;--surf:#fff;--tx:#3a1d28;--mut:#7d5a64;--ac:#c2566b;--acs:#fff;--ch:#c9a66b;--dew:#f6cfd0;--g1:#f9d9d8;--g2:#f4e4cc}
+[data-theme=dark]{--bg:#2b1620;--surf:#3a2029;--tx:#fcefee;--mut:#dcbcc3;--ac:#f0a8b4;--acs:#2b1620;--ch:#e9d2a8;--dew:#5c2a3a;--g1:#5c2a3a;--g2:#2b1620}
+body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:28px 20px 70px;transition:.3s}
+.wrap{max-width:1100px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,46px);font-weight:600}
+.lead{color:var(--mut);max-width:640px;line-height:1.5;margin-top:6px}
+.tog{border:1px solid var(--ac);background:transparent;color:var(--tx);border-radius:99px;padding:9px 18px;font:700 13px Manrope;cursor:pointer}
+.pal{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px}
+@media(max-width:700px){.pal{grid-template-columns:repeat(2,1fr)}}
+.pal div{border-radius:16px;padding:12px;height:84px;display:flex;flex-direction:column;justify-content:flex-end;font-size:12px;font-weight:700;border:1px solid rgba(128,128,128,.2)}
+.pal small{font-weight:500;opacity:.8}
+.card{background:var(--surf);border-radius:22px;overflow:hidden;margin-bottom:20px;border:1px solid color-mix(in srgb,var(--ac) 18%,transparent)}
+.stage{height:210px;display:grid;place-items:center;background:var(--pat),linear-gradient(135deg,var(--g1),var(--g2))}
+:root{--pat:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M22 2l5 15 15 5-15 5-5 15-5-15-15-5 15-5z' fill='none' stroke='%23c2566b' stroke-opacity='.14'/%3E%3C/svg%3E")}
+.body{padding:18px 22px 22px;display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:center}
+@media(max-width:760px){.body{grid-template-columns:1fr}}
+h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600}
+p.d{color:var(--mut);font-size:14px;line-height:1.55;margin-top:6px}
+.apps{display:flex;gap:14px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.ic{width:64px;height:64px;border-radius:16px;background:var(--ac);display:grid;place-items:center}
+.ic.lt{background:var(--surf);border:1px solid color-mix(in srgb,var(--ac) 35%,transparent)}
+.ic.dk{background:#2b1620}
+.mini{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:99px;padding:8px 14px;font-size:12px;font-weight:700}
+/* wordmarks */
+.w{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(54px,8vw,80px);color:var(--tx);line-height:1}
+.w .e{position:relative;display:inline-block}
+.w .e svg{position:absolute;left:50%;top:-.02em;width:.2em;height:.28em;transform:translateX(-50%);fill:var(--ac)}
+.w.cap{letter-spacing:.2em;text-transform:uppercase;font-weight:500;font-size:clamp(40px,6vw,60px)}
+.lock{display:flex;align-items:center;gap:16px}
+.ar{font-family:'Noto Kufi Arabic',sans-serif;color:var(--ac);font-size:22px;margin-top:6px;text-align:center}
+.sub{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div><h1>Rosée · logo directions</h1><p class="lead">The brand colour is now a real dewy rose instead of brick red. Three logo ideas, each shown with its phone icon. All three use a dewdrop, the idea behind the name.</p></div><button class="tog" id="t">Dark / Light</button></header>
+
+<div class="pal">
+<div style="background:var(--dew);color:#3a1d28">Rosée<small>dew pink</small></div>
+<div style="background:var(--ac);color:var(--acs)">Pétale<small>main accent</small></div>
+<div style="background:var(--ch);color:#2b1620">Champagne<small>gold accent</small></div>
+<div style="background:var(--tx);color:var(--bg)">Vin<small>text and dark</small></div>
+<div style="background:var(--bg);color:var(--tx)">Aube<small>background</small></div>
+</div>
+
+<!-- A -->
+<article class="card"><div class="stage"><div><div class="w">Ros<span class="e">e<svg viewBox="-9 -11 18 21"><path d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg></span>e</div><div class="ar">روزيه · جمالك بنقرة</div></div></div>
+<div class="body"><div><h2>A · The drop on the é</h2><p class="d">The accent of Rosée becomes a dewdrop. Simplest and most elegant: the name carries the logo, and it stays readable at small sizes. Works with the Tunisian star pattern behind it.</p></div>
+<div class="apps"><div class="ic"><svg width="34" height="34" viewBox="-9 -11 18 21"><path fill="var(--acs)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg></div><div class="ic lt"><svg width="34" height="34" viewBox="-9 -11 18 21"><path fill="var(--ac)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg></div><span class="mini">rosée</span></div></div></article>
+
+<!-- B -->
+<article class="card"><div class="stage"><div class="lock">
+<svg width="92" height="104" viewBox="0 0 92 104"><path d="M6 100V46C6 22 24 4 46 4s40 18 40 42v54z" fill="var(--ac)"/><text x="46" y="82" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="66" font-weight="600" fill="var(--acs)">R</text><path transform="translate(46 34) scale(.95)" fill="var(--ch)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg>
+<div><div class="w" style="font-size:clamp(44px,6.5vw,66px)">Rosée</div><div class="sub">beauté · soins · rendez-vous</div></div></div></div>
+<div class="body"><div><h2>B · The arch</h2><p class="d">An arch window (Tunisian doors and mashrabiya) holding an R and a champagne drop. More recognisable as a symbol, good for the phone icon and social avatars. It echoes the arch shape already in the homepage hero.</p></div>
+<div class="apps"><div class="ic"><svg width="40" height="46" viewBox="0 0 92 104"><path d="M6 100V46C6 22 24 4 46 4s40 18 40 42v54z" fill="var(--acs)"/><text x="46" y="82" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="66" font-weight="600" fill="var(--ac)">R</text></svg></div><div class="ic dk"><svg width="40" height="46" viewBox="0 0 92 104"><path d="M6 100V46C6 22 24 4 46 4s40 18 40 42v54z" fill="#f0a8b4"/><text x="46" y="82" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="66" font-weight="600" fill="#2b1620">R</text></svg></div><span class="mini">rosée</span></div></div></article>
+
+<!-- C -->
+<article class="card"><div class="stage"><div class="lock">
+<svg width="86" height="86" viewBox="-43 -43 86 86"><path fill="none" stroke="var(--ac)" stroke-width="3" stroke-linejoin="round" d="M0-38l9 23 23 9-23 9-9 23-9-23-23-9 23-9z M0-38l9 23 23 9-23 9-9 23-9-23-23-9 23-9z" transform="rotate(0)"/><path fill="none" stroke="var(--ac)" stroke-width="3" stroke-linejoin="round" d="M0-38l9 23 23 9-23 9-9 23-9-23-23-9 23-9z" transform="rotate(45) scale(.78)"/><path transform="translate(0 2) scale(.95)" fill="var(--ac)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg>
+<div class="w cap" style="font-size:clamp(36px,5.5vw,54px)">Rosée</div></div></div>
+<div class="body"><div><h2>C · Star and drop</h2><p class="d">A star in the Tunisian geometric tradition with the dewdrop at its centre. The most local and ornamental of the three, a bit more complex. Spaced capitals read more luxurious, more like a spa.</p></div>
+<div class="apps"><div class="ic"><svg width="44" height="44" viewBox="-43 -43 86 86"><path fill="none" stroke="var(--acs)" stroke-width="4" stroke-linejoin="round" d="M0-38l9 23 23 9-23 9-9 23-9-23-23-9 23-9z"/><path transform="translate(0 2) scale(.95)" fill="var(--acs)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg></div><div class="ic lt"><svg width="44" height="44" viewBox="-43 -43 86 86"><path fill="none" stroke="var(--ac)" stroke-width="4" stroke-linejoin="round" d="M0-38l9 23 23 9-23 9-9 23-9-23-23-9 23-9z"/><path transform="translate(0 2) scale(.95)" fill="var(--ac)" d="M0-10C6-2 8 3 8 6A8 8 0 1 1-8 6C-8 3-6-2 0-10Z"/></svg></div><span class="mini">rosée</span></div></div></article>
+
+</div>
+<script>
+try{const p=new URLSearchParams(location.search).get('theme');if(p)document.documentElement.dataset.theme=p}catch(e){}
+document.getElementById('t').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'};
+</script>
+</body>
+</html>
