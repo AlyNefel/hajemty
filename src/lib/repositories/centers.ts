@@ -173,8 +173,15 @@ export async function getCenterBySlug(slug: string): Promise<CenterView | null> 
 
 export async function listCenterSlugs(): Promise<{ slug: string; updatedAt?: Date }[]> {
   if (!hasDatabase()) return DEMO_CENTERS.map((c) => ({ slug: c.slug }));
-  await connectDB();
-  return Center.find({ status: "published", deletedAt: null }, { slug: 1, updatedAt: 1, _id: 0 }).lean();
+  try {
+    await connectDB();
+    return await Center.find({ status: "published", deletedAt: null }, { slug: 1, updatedAt: 1, _id: 0 }).lean();
+  } catch (e) {
+    // Used by generateStaticParams/sitemap: a DB hiccup at build time must not fail the build.
+    // Pages are then rendered on first request instead (ISR).
+    console.warn("listCenterSlugs: database unavailable, falling back to on-demand rendering", (e as Error).message);
+    return [];
+  }
 }
 
 /* ---------------- Mongo implementation ---------------- */
@@ -199,9 +206,11 @@ async function mongoCandidates(s: CenterSearch): Promise<Candidate[]> {
   }
   const tokens = tokenize(s.q ?? "");
   if (tokens.length) {
-    const stems = tokens.map((t) => new RegExp(escapeRe(t.slice(0, Math.max(3, Math.min(5, t.length)))), "i"));
+    // Loose 3-letter stems keep typos ("hamam" → "ham…" → Hammam) in the candidate set;
+    // the precise, typo-tolerant ranking happens in scoreDocument() below.
+    const stems = tokens.map((t) => new RegExp(escapeRe(t.slice(0, 3)), "i"));
     const serviceCenters = await Service.distinct("centerId", { isActive: true, $or: stems.map((re) => ({ "name.fr": re })) });
-    const cats = CATEGORIES.filter((c) => tokens.some((t) => fold(`${c.fr} ${c.keywords}`).includes(t.slice(0, 5)))).map((c) => c.key);
+    const cats = CATEGORIES.filter((c) => tokens.some((t) => fold(`${c.fr} ${c.keywords}`).includes(t.slice(0, 3)))).map((c) => c.key);
     filter.$or = [
       ...stems.flatMap((re) => [{ "name.fr": re }, { "address.delegation": re }, { "address.city": re }]),
       { _id: { $in: serviceCenters } },

@@ -15,7 +15,9 @@ export async function connectDB(): Promise<typeof mongoose> {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error("MONGODB_URI is not set");
   mongoose.set("strictQuery", true);
-  mongoose.set("sanitizeFilter", true); // blocks operator injection like { $gt: "" } from user input
+  // NoSQL-injection defense lives at the edges: every request body / query param is parsed with zod
+  // into plain strings/numbers before it reaches a query, so user input can never carry `$` operators.
+  // (A global `sanitizeFilter` would also neutralize the app's own $in/$gte/$ne queries.)
   cache.promise ??= mongoose.connect(uri, {
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORIES, GOVERNORATES } from "@/data/tunisia";
 import { searchCenters } from "@/lib/repositories/centers";
+import { hasDatabase } from "@/lib/db";
 import { SITE_URL, formatTND } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -12,11 +13,17 @@ import { JsonLd } from "@/components/seo/JsonLd";
 
 /** Programmatic local SEO landing pages: /coiffeur/tunis, /spa/djerba… (docs/10-seo.md §12.1). */
 export const revalidate = 3600;
-export const dynamicParams = false;
+
+/**
+ * Demo mode pre-renders all 288 pages at build. With a database they render on first request and
+ * are cached for an hour (ISR), so builds never depend on 288 DB round-trips or on DB availability.
+ * Unknown category/governorate combinations still 404 via resolve().
+ */
 
 type Params = { params: Promise<{ category: string; governorate: string }> };
 
 export function generateStaticParams() {
+  if (hasDatabase()) return [];
   return CATEGORIES.flatMap((c) => GOVERNORATES.map((g) => ({ category: c.slug, governorate: g.slug })));
 }
 

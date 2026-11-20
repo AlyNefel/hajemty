@@ -1,14 +1,16 @@
 /**
- * Seeds MongoDB with the demo dataset: npm run seed (requires MONGODB_URI in .env.local or env).
+ * Seeds MongoDB with the demo dataset: npm run seed (requires MONGODB_URI in .env, .env.local or env).
  * It is idempotent and upserts by slug. Transactions need a replica set (Atlas, or `mongod --replSet rs0` locally).
  */
 import { readFileSync, existsSync } from "node:fs";
 import mongoose from "mongoose";
 
-if (existsSync(".env.local")) {
-  for (const line of readFileSync(".env.local", "utf8").split(/\r?\n/)) {
+// Same precedence as Next.js: real env > .env.local > .env (empty values are ignored)
+for (const file of [".env.local", ".env"]) {
+  if (!existsSync(file)) continue;
+  for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    if (m && m[2] && !process.env[m[1]]) process.env[m[1]] = m[2];
   }
 }
 
@@ -40,7 +42,8 @@ async function main() {
         contact: { phone: d.phone, whatsapp: d.whatsapp, instagram: d.instagram },
         openingHours: d.openingHours, theme: d.theme, plan: d.plan, verified: d.verified, genderFocus: d.genderFocus,
         priceFromMillimes: d.priceFromMillimes, status: "published",
-        stats: { ratingAvg: d.rating, reviewCount: d.reviewCount, followerCount: d.followerCount },
+        // Ratings are derived from verified reviews only, and a fresh database has none yet.
+        stats: { ratingAvg: 0, reviewCount: 0, followerCount: 0 },
       },
       { upsert: true, new: true },
     );

@@ -19,6 +19,10 @@ export const GET = handle(async (req: NextRequest, { params }: { params: Promise
   if (!center) return apiError(404, "NOT_FOUND", "Center not found");
 
   if (hasDatabase()) {
+    const oid = /^[a-f0-9]{24}$/;
+    if (!q.serviceIds.every((x) => oid.test(x)) || (q.employeeId && !oid.test(q.employeeId))) {
+      return apiError(400, "INVALID_ID", "Identifiant invalide");
+    }
     const slots = await getAvailability(center.id, q.serviceIds, q.date, q.employeeId);
     return NextResponse.json({ data: slots });
   }

@@ -77,7 +77,7 @@ function BookingRow({ b, onReview }: { b: CustomerBooking; onReview: (b: Custome
         {b.canReview && <Button size="sm" onClick={() => onReview(b)}><MessageSquareQuote className="size-4" /> Donner mon avis</Button>}
         {b.canCancel && (
           <Button size="sm" variant="outline" disabled={pending} onClick={cancel} className="border-rose-400/40 text-rose-300 hover:border-rose-400 hover:bg-rose-400/10">
-            {confirm ? "Confirmer l'annulation" : "Annuler"}
+            {pending ? "Annulation…" : confirm ? "Confirmer l'annulation" : "Annuler"}
           </Button>
         )}
       </div>
