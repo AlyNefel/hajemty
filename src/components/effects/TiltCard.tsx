@@ -14,7 +14,7 @@ export function TiltCard({ children, className, max = 8 }: { children: React.Rea
   const ry = useSpring(useTransform(px, [0, 1], [-max, max]), spring);
   const gx = useTransform(px, (v) => `${v * 100}%`);
   const gy = useTransform(py, (v) => `${v * 100}%`);
-  const glare = useMotionTemplate`radial-gradient(420px circle at ${gx} ${gy}, rgb(241 217 166 / 0.16), transparent 45%)`;
+  const glare = useMotionTemplate`radial-gradient(420px circle at ${gx} ${gy}, color-mix(in oklab, var(--color-gold-300) 16%, transparent), transparent 45%)`;
 
   return (
     <m.div

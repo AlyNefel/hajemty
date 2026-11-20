@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
-/* ---------- Design tokens: "Jasmine & Gold" (docs/07-design-system.md) ---------- */
+/* ---------- Design tokens (docs/07-design-system.md) ----------
+   Two switchable platform themes. Every utility (bg-gold-400, text-noir-950…) reads these variables,
+   so a theme is just a set of overrides on <html data-theme="…">:
+   - "jasmine"   (default) Jasmine & Gold: aubergine noir + champagne gold
+   - "electric"  Électrique: midnight indigo + indigo/magenta/blue/red brand palette
+   The "gold"/"rose"/"plum" names are roles (accent / secondary / glow), not literal hues. */
 @theme {
   --color-noir-950: #0b0710;
   --color-noir-900: #140d1c;
@@ -22,7 +27,7 @@
   --font-sans: var(--font-manrope), "Manrope", system-ui, sans-serif;
   --font-arabic: var(--font-kufi), "Noto Kufi Arabic", sans-serif;
 
-  --shadow-glow-gold: 0 0 40px -10px rgb(229 192 123 / 0.45);
+  --shadow-glow-gold: 0 0 40px -10px color-mix(in oklab, var(--color-gold-400) 45%, transparent);
   --shadow-card: 0 30px 60px -30px rgb(0 0 0 / 0.6);
 
   --animate-aurora: aurora 28s ease-in-out infinite alternate;
@@ -54,6 +59,36 @@
 
 :root {
   color-scheme: dark;
+  /* Non-color-scale theme hooks (gradients, ambient effects) */
+  --text-gradient: linear-gradient(110deg, #b08533 0%, #f7ead0 35%, #e5c07b 55%, #d4a64a 75%, #f1d9a6 100%);
+  --aurora-1: rgb(124 77 189 / 0.45);
+  --aurora-2: rgb(217 122 134 / 0.35);
+  --aurora-3: rgb(229 192 123 / 0.28);
+  --particle-rgb: 229, 192, 123;
+}
+
+/* ---------- Théme « Électrique » ---------- */
+:root[data-theme="electric"] {
+  --color-noir-950: #08071c;
+  --color-noir-900: #100e2e;
+  --color-noir-800: #1a1744;
+  --color-noir-700: #262158;
+  --color-gold-200: #e1ddff;
+  --color-gold-300: #b9b1ff;
+  --color-gold-400: #8f84fb;
+  --color-gold-500: #6157ef;
+  --color-gold-600: #473bc9;
+  --color-rose-300: #f5a3a3;
+  --color-rose-400: #ec6d6d;
+  --color-rose-500: #e04242;
+  --color-plum-500: #cf18dc;
+  --color-jasmine-50: #f6f5ff;
+  --color-jasmine-100: #ebe9fb;
+  --text-gradient: linear-gradient(110deg, #296bae 0%, #6157ef 25%, #cf18dc 50%, #e04242 72%, #6f2fd0 100%);
+  --aurora-1: rgb(111 47 208 / 0.55);
+  --aurora-2: rgb(207 24 220 / 0.32);
+  --aurora-3: rgb(41 107 174 / 0.45);
+  --particle-rgb: 207, 24, 220;
 }
 
 html {
@@ -63,6 +98,7 @@ html {
 
 body {
   background: var(--color-noir-950);
+  transition: background-color 0.4s ease, color 0.4s ease;
   color: var(--color-jasmine-50);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
@@ -70,7 +106,7 @@ body {
 
 [dir="rtl"] body { font-family: var(--font-arabic); }
 
-::selection { background: rgb(229 192 123 / 0.35); color: #fff; }
+::selection { background: color-mix(in oklab, var(--color-gold-400) 35%, transparent); color: #fff; }
 
 @layer components {
   .container-lux { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 2xl:max-w-[1440px]; }
@@ -79,7 +115,7 @@ body {
     box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06), var(--shadow-card);
   }
   .text-gold-gradient, .text-gold-shimmer {
-    background: linear-gradient(110deg, #b08533 0%, #f7ead0 35%, #e5c07b 55%, #d4a64a 75%, #f1d9a6 100%);
+    background: var(--text-gradient);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -96,8 +132,8 @@ body {
   }
   /* Neomorphic pill used for category chips */
   .neo {
-    background: linear-gradient(145deg, #1a1224, #110b18);
-    box-shadow: 6px 6px 14px #07040a, -6px -6px 14px #1f1630;
+    background: linear-gradient(145deg, color-mix(in oklab, var(--color-noir-800) 70%, var(--color-noir-950)), var(--color-noir-900));
+    box-shadow: 6px 6px 14px color-mix(in oklab, var(--color-noir-950) 60%, black), -6px -6px 14px var(--color-noir-800);
   }
 }
 

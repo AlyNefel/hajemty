@@ -70,3 +70,18 @@ Located in `src/components/ui` and `src/components/effects`.
 - Focus rings are a visible `ring-2 ring-gold-400 ring-offset-2 ring-offset-noir-950`.
 - Full RTL support: layout uses logical properties (`ps-`, `me-`, `start-`) everywhere.
 - Every interactive effect has a keyboard and reduced-motion equivalent.
+
+## 8.5 Switchable platform themes
+
+The platform UI ships with two themes, which the visitor picks from the navbar swatches, the mobile menu ("Thème") or the dashboard sidebar. The choice is saved in `localStorage` and applied before first paint by an inline boot script, so the page never flashes the other theme.
+
+| Role (token) | Jasmin & Or (default) | Électrique |
+|---|---|---|
+| Background `noir-950/900/800` | `#0b0710` · `#140d1c` · `#1e1529` | `#08071c` · `#100e2e` · `#1a1744` |
+| Accent `gold-300/400/500/600` | `#f1d9a6` · `#e5c07b` · `#d4a64a` · `#b08533` | `#b9b1ff` · `#8f84fb` · **`#6157ef`** · **`#473bc9`** |
+| Secondary / alerts `rose-500` | `#d97a86` | **`#e04242`** |
+| Glow `plum-500` | `#7c4dbd` | **`#cf18dc`** |
+| Aurora | plum · rose · gold | **`#6f2fd0`** · `#cf18dc` · **`#296bae`** |
+| Display gradient | gold shimmer | `#296bae → #6157ef → #cf18dc → #e04242 → #6f2fd0` |
+
+How it works: all Tailwind color utilities read CSS variables, and `:root[data-theme="electric"]` in `globals.css` overrides them. The token names (`gold`, `rose`, `plum`) are roles, not hues. Salons' own mini-site themes (`/center/[slug]`) are deliberately unaffected, because their branding belongs to the salon. To add a theme, add one block of overrides in `globals.css` and one entry in `src/lib/platform-theme.ts`.

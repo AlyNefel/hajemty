@@ -5,6 +5,7 @@ import { dashboardActor, getDashCenter, isDemo, listMyCenters } from "@/lib/dash
 import { listCenterReviews } from "@/lib/reviews/repo";
 import { Logo } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { BottomNav, CenterSwitcher, SideNav, type NavKey } from "@/components/dashboard/DashNav";
 
 export const dynamic = "force-dynamic";
@@ -42,13 +43,22 @@ export default async function DashboardLayout({ children, params }: { children: 
           <CenterSwitcher current={center.slug} centers={centers} />
         </div>
         <SideNav slug={center.slug} items={items} badges={badges} />
-        {isDemo() && <DemoNote className="mt-auto" />}
+        <div className="mt-auto space-y-3">
+          <div>
+            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-jasmine-50/40">Thème</p>
+            <ThemeSwitcher variant="full" />
+          </div>
+          {isDemo() && <DemoNote />}
+        </div>
       </aside>
 
       <div className="min-w-0 pb-24 lg:pb-10">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-noir-950/85 px-4 py-3 backdrop-blur-xl lg:hidden">
           <p className="truncate font-display text-xl font-semibold">{center.name}</p>
-          <div className="w-40 shrink-0"><CenterSwitcher current={center.slug} centers={centers} /></div>
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeSwitcher />
+            <div className="w-36"><CenterSwitcher current={center.slug} centers={centers} /></div>
+          </div>
         </header>
         {isDemo() && <DemoNote className="mx-4 mt-4 lg:hidden" />}
         <main className="px-4 py-6 sm:px-6 lg:px-10 lg:py-10">{children}</main>

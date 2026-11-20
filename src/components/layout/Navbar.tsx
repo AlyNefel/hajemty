@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -58,6 +59,7 @@ export function Navbar() {
             ))}
           </ul>
           <div className="flex items-center gap-2">
+            <ThemeSwitcher className="hidden sm:flex" />
             {user ? (
               <Link href="/compte" className="hidden items-center gap-2 rounded-full py-1 ps-1 pe-3 text-sm text-jasmine-50/80 transition hover:bg-white/5 sm:inline-flex">
                 <span className="grid size-7 place-items-center rounded-full bg-gold-400/20 text-xs font-bold text-gold-200">{user.name?.[0] ?? "?"}</span>
@@ -79,6 +81,10 @@ export function Navbar() {
               {LINKS.map((l) => (
                 <li key={l.href}><Link onClick={() => setOpen(false)} href={l.href} className="block rounded-2xl px-4 py-3 text-jasmine-50/85 hover:bg-white/5">{l.label}</Link></li>
               ))}
+              <li className="border-t border-white/10 px-1 pt-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">Thème</p>
+                <ThemeSwitcher variant="full" />
+              </li>
               <li className="grid grid-cols-2 gap-2 pt-2">
                 <Button asChild variant="glass"><Link href={user ? "/compte" : "/login"}>{user ? "Mon compte" : "Connexion"}</Link></Button>
                 <Button asChild><Link href="/recherche">Réserver</Link></Button>

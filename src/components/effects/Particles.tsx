@@ -8,7 +8,7 @@ type Props = { count?: number; color?: string; className?: string };
  * Golden "jasmine dust": a lightweight canvas particle field. It is DPR-aware, pauses when off-screen
  * or the tab is hidden, and is disabled for reduced motion, Save-Data, or low-memory devices.
  */
-export function Particles({ count = 55, color = "229,192,123", className }: Props) {
+export function Particles({ count = 55, color, className }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -16,6 +16,12 @@ export function Particles({ count = 55, color = "229,192,123", className }: Prop
     if (!canvas) return;
     const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || nav.connection?.saveData || (nav.deviceMemory ?? 8) < 3) return;
+
+    // Color follows the active platform theme (--particle-rgb) unless one is forced via props.
+    const readRgb = () => color ?? (getComputedStyle(document.documentElement).getPropertyValue("--particle-rgb").trim() || "229,192,123");
+    let rgb = readRgb();
+    const themeObserver = new MutationObserver(() => { rgb = readRgb(); });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
     const ctx = canvas.getContext("2d")!;
     let w = 0, h = 0, raf = 0, visible = true;
@@ -39,8 +45,8 @@ export function Particles({ count = 55, color = "229,192,123", className }: Prop
         if (p.x < -0.02 || p.x > 1.02) p.x = Math.random();
         const alpha = p.a * (0.6 + 0.4 * Math.sin(p.t));
         ctx.beginPath();
-        ctx.fillStyle = `rgba(${color},${alpha})`;
-        ctx.shadowBlur = 8; ctx.shadowColor = `rgba(${color},0.8)`;
+        ctx.fillStyle = `rgba(${rgb},${alpha})`;
+        ctx.shadowBlur = 8; ctx.shadowColor = `rgba(${rgb},0.8)`;
         ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -51,7 +57,7 @@ export function Particles({ count = 55, color = "229,192,123", className }: Prop
     resize();
     window.addEventListener("resize", resize);
     raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); io.disconnect(); window.removeEventListener("resize", resize); };
+    return () => { cancelAnimationFrame(raf); io.disconnect(); themeObserver.disconnect(); window.removeEventListener("resize", resize); };
   }, [count, color]);
 
   return <canvas ref={ref} aria-hidden className={className ?? "pointer-events-none absolute inset-0 h-full w-full"} />;

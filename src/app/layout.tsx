@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope, Noto_Kufi_Arabic } from "next/font/google";
 import { SITE_URL } from "@/lib/utils";
 import { MotionProvider } from "@/components/effects/MotionProvider";
+import { THEME_BOOT_SCRIPT } from "@/lib/platform-theme";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], style: ["normal", "italic"], variable: "--font-cormorant", display: "swap" });
@@ -41,7 +42,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" dir="ltr" className={`${cormorant.variable} ${manrope.variable} ${kufi.variable}`}>
+    // suppressHydrationWarning: the boot script may set data-theme on <html> before React hydrates.
+    <html lang="fr" dir="ltr" data-theme="jasmine" suppressHydrationWarning className={`${cormorant.variable} ${manrope.variable} ${kufi.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-dvh antialiased">
         <MotionProvider>{children}</MotionProvider>
       </body>

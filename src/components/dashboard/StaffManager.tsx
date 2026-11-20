@@ -149,7 +149,7 @@ function StaffDialog({ slug, editing, services, centerHours, onClose }: {
             <div className="grid max-h-52 gap-1.5 overflow-y-auto sm:grid-cols-2">
               {services.map((s) => (
                 <label key={s.id} className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-white/[0.03] px-3 py-2 text-sm">
-                  <input type="checkbox" className="size-4 accent-[#e5c07b]" checked={serviceIds.includes(s.id)}
+                  <input type="checkbox" className="size-4 accent-gold-400" checked={serviceIds.includes(s.id)}
                     onChange={(ev) => setServiceIds(ev.target.checked ? [...serviceIds, s.id] : serviceIds.filter((x) => x !== s.id))} />
                   <span className="truncate">{s.name}</span>
                 </label>
