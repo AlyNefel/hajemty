@@ -7,3 +7,5 @@ out
 next-env.d.ts
 .vercel
 coverage
+# generated from design/ by scripts/sync-design.mjs
+public/design

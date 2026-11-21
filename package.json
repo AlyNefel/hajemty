@@ -4,7 +4,9 @@
   "private": true,
   "description": "Hajemti — Tunisia's beauty & wellness marketplace",
   "scripts": {
+    "predev": "node scripts/sync-design.mjs",
     "dev": "next dev --turbopack",
+    "prebuild": "node scripts/sync-design.mjs",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
