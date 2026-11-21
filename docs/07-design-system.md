@@ -71,17 +71,28 @@ Located in `src/components/ui` and `src/components/effects`.
 - Full RTL support: layout uses logical properties (`ps-`, `me-`, `start-`) everywhere.
 - Every interactive effect has a keyboard and reduced-motion equivalent.
 
-## 8.5 Switchable platform themes
+## 8.5 Platform themes (super-admin controlled)
 
-The platform UI ships with two themes, which the visitor picks from the navbar swatches, the mobile menu ("Thème") or the dashboard sidebar. The choice is saved in `localStorage` and applied before first paint by an inline boot script, so the page never flashes the other theme.
+There are six palettes. The **super admin** chooses at `/admin/apparence` (linked from the dashboard sidebar):
+- the **default theme** for every visitor,
+- which themes visitors may **choose** from the switcher (navbar dropdown, mobile menu, dashboard sidebar),
+- whether visitors may choose at all. When this is off, the switcher disappears and saved preferences are ignored.
 
-| Role (token) | Jasmin & Or (default) | Électrique |
-|---|---|---|
-| Background `noir-950/900/800` | `#0b0710` · `#140d1c` · `#1e1529` | `#08071c` · `#100e2e` · `#1a1744` |
-| Accent `gold-300/400/500/600` | `#f1d9a6` · `#e5c07b` · `#d4a64a` · `#b08533` | `#b9b1ff` · `#8f84fb` · **`#6157ef`** · **`#473bc9`** |
-| Secondary / alerts `rose-500` | `#d97a86` | **`#e04242`** |
-| Glow `plum-500` | `#7c4dbd` | **`#cf18dc`** |
-| Aurora | plum · rose · gold | **`#6f2fd0`** · `#cf18dc` · **`#296bae`** |
-| Display gradient | gold shimmer | `#296bae → #6157ef → #cf18dc → #e04242 → #6f2fd0` |
+Each card shows a live mini-preview and an "Essayer sur cette page" button that tries the theme without saving. "Enregistrer et publier" re-themes the whole site at once (tag + layout revalidation). Settings are stored in MongoDB (`platformsettings/appearance`), or in memory in demo mode, and are read through `unstable_cache`, so pages stay static/ISR.
 
-How it works: all Tailwind color utilities read CSS variables, and `:root[data-theme="electric"]` in `globals.css` overrides them. The token names (`gold`, `rose`, `plum`) are roles, not hues. Salons' own mini-site themes (`/center/[slug]`) are deliberately unaffected, because their branding belongs to the salon. To add a theme, add one block of overrides in `globals.css` and one entry in `src/lib/platform-theme.ts`.
+| Theme | Mood | Surfaces | Accent (`gold-*`) | Secondary (`rose-*`) | Glow (`plum-500`) |
+|---|---|---|---|---|---|
+| **Jasmin & Or** (default) | Signature luxury | aubergine `#0b0710` | champagne `#e5c07b` | rose `#d97a86` | `#7c4dbd` |
+| **Électrique** | Night neon | midnight indigo `#08071c` | `#6157ef` / `#473bc9` | red `#e04242` | magenta `#cf18dc` (+ `#296bae`, `#6f2fd0` aurora) |
+| **Claire** (light) | Bright editorial | ivory `#faf7f2` / white | bordeaux `#973f55` | terracotta `#c2410c` | `#b07a8a` |
+| **Sidi Bou Saïd** | Blue doors & bougainvillea | navy `#050f1c` | azure `#5fb0ff` / `#2f8fef` | bougainvillea `#e0388f` | turquoise `#22d3ee` |
+| **Sahara** | Warm earth | espresso `#140b07` | terracotta/saffron `#f0a05a` / `#e07a3f` | `#d9604f` | saffron `#f2b134` |
+| **Émeraude** | Wellness | deep jade `#04130f` | mint `#6ee7b7` / `#34d399` | coral `#fb7185` | teal `#14b8a6` |
+
+**How it works:** all Tailwind color utilities read CSS variables, and each `:root[data-theme="…"]` block in `globals.css` overrides them. The token names (`gold`, `rose`, `plum`) are *roles*, not hues. An inline boot script applies the right theme before first paint (no flash).
+
+**Light theme specifics (Claire):** the dark UI draws hairlines and tints with `white` at low opacity, so Claire redefines `--color-white` as ink, which turns those into subtle dark hairlines. The few true-white elements use `bg-[#fff]` / `text-[#fff]`. Pale status tints (emerald/sky/violet-200/300) get darker, readable variants, `.glass` becomes frosted white, and `color-scheme: light` styles the native controls.
+
+**Salon mini-sites** (`/center/[slug]`) keep their own branding in every theme.
+
+**Adding a theme:** add one CSS block in `globals.css` and one entry (label, swatches, preview colors) in `src/lib/platform-theme.ts`. It then appears automatically in the admin and the switchers.

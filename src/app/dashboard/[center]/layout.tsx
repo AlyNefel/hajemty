@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { FlaskConical } from "lucide-react";
+import Link from "next/link";
+import { FlaskConical, Palette } from "lucide-react";
 import { can } from "@/lib/rbac";
 import { dashboardActor, getDashCenter, isDemo, listMyCenters } from "@/lib/dashboard/repo";
 import { listCenterReviews } from "@/lib/reviews/repo";
@@ -44,10 +45,13 @@ export default async function DashboardLayout({ children, params }: { children: 
         </div>
         <SideNav slug={center.slug} items={items} badges={badges} />
         <div className="mt-auto space-y-3">
-          <div>
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-jasmine-50/40">Thème</p>
-            <ThemeSwitcher variant="full" />
-          </div>
+          {actor.role === "SUPER_ADMIN" && (
+            <Link href="/admin/apparence" className="flex items-center gap-3 rounded-xl border border-gold-400/25 bg-gold-400/5 px-3 py-2.5 text-sm text-gold-200 transition hover:bg-gold-400/10">
+              <Palette className="size-4.5" /> <span className="flex-1">Apparence du site</span>
+              <span className="rounded-full bg-gold-400/20 px-1.5 py-0.5 text-[10px] font-bold uppercase">Admin</span>
+            </Link>
+          )}
+          <ThemeSwitcher variant="full" label="Thème" />
           {isDemo() && <DemoNote />}
         </div>
       </aside>
@@ -57,6 +61,9 @@ export default async function DashboardLayout({ children, params }: { children: 
           <p className="truncate font-display text-xl font-semibold">{center.name}</p>
           <div className="flex shrink-0 items-center gap-2">
             <ThemeSwitcher />
+            {actor.role === "SUPER_ADMIN" && (
+              <Link href="/admin/apparence" aria-label="Apparence du site (admin)" className="grid size-9 place-items-center rounded-full bg-gold-400/10 text-gold-200"><Palette className="size-4" /></Link>
+            )}
             <div className="w-36"><CenterSwitcher current={center.slug} centers={centers} /></div>
           </div>
         </header>

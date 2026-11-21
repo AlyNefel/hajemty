@@ -73,5 +73,14 @@ Code: `src/app/dashboard`, `src/components/dashboard`, `src/lib/dashboard` (`rep
 
 **Demo mode:** without `MONGODB_URI`, `/dashboard` is open and runs on an in-memory store seeded with four weeks of fictitious bookings. You act as the owner of every demo center, and edits last until the server restarts. Never deploy publicly without `MONGODB_URI`, or the demo dashboard will be reachable by anyone (it only holds fake data, but still).
 
+## Themes & super admin
+
+Six platform palettes (Jasmin & Or, Électrique, Claire, Sidi Bou Saïd, Sahara, Émeraude). The super admin chooses the default and the themes visitors can pick at **`/admin/apparence`** (see docs/07-design-system.md §8.5). In demo mode you are super admin automatically. With a database, give your account the role first:
+
+```bash
+npm run grant-role -- you@example.com super-admin
+npm run grant-role -- you@example.com owner maison-jasmin-la-marsa   # salon dashboard access
+```
+
 ## Next steps (Phase 1)
 WhatsApp/email notifications via a queue, Cloudinary signed uploads, reviews flow, Atlas Search index, Upstash rate limiting, Arabic `/ar` locale with RTL, the theme builder UI, staff invitations, and drag-and-drop rescheduling in the calendar.

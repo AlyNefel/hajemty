@@ -91,6 +91,121 @@
   --particle-rgb: 207, 24, 220;
 }
 
+/* ---------- Thème « Sidi Bou Saïd » : bleu des portes, bougainvillier, chaux ---------- */
+:root[data-theme="sidi"] {
+  --color-noir-950: #050f1c;
+  --color-noir-900: #0b1a2e;
+  --color-noir-800: #12253f;
+  --color-noir-700: #1b3252;
+  --color-gold-200: #dbeafe;
+  --color-gold-300: #a5d0ff;
+  --color-gold-400: #5fb0ff;
+  --color-gold-500: #2f8fef;
+  --color-gold-600: #1c6fc9;
+  --color-rose-300: #f9a8d4;
+  --color-rose-400: #f06bb3;
+  --color-rose-500: #e0388f;
+  --color-plum-500: #22d3ee;
+  --color-jasmine-50: #f2f8ff;
+  --color-jasmine-100: #e3eefb;
+  --text-gradient: linear-gradient(110deg, #a5d0ff 0%, #5fb0ff 30%, #22d3ee 50%, #f06bb3 75%, #a5d0ff 100%);
+  --aurora-1: rgb(47 143 239 / 0.45);
+  --aurora-2: rgb(224 56 143 / 0.3);
+  --aurora-3: rgb(34 211 238 / 0.28);
+  --particle-rgb: 165, 208, 255;
+}
+
+/* ---------- Thème « Sahara » : terracotta, safran, sable ---------- */
+:root[data-theme="sahara"] {
+  --color-noir-950: #140b07;
+  --color-noir-900: #1f130d;
+  --color-noir-800: #2b1b13;
+  --color-noir-700: #3a261b;
+  --color-gold-200: #fde4c8;
+  --color-gold-300: #f8c58f;
+  --color-gold-400: #f0a05a;
+  --color-gold-500: #e07a3f;
+  --color-gold-600: #b85a2a;
+  --color-rose-300: #f6b3a7;
+  --color-rose-400: #ec8a7a;
+  --color-rose-500: #d9604f;
+  --color-plum-500: #f2b134;
+  --color-jasmine-50: #fdf6ee;
+  --color-jasmine-100: #f5e9dc;
+  --text-gradient: linear-gradient(110deg, #b85a2a 0%, #f8c58f 30%, #f2b134 50%, #e07a3f 75%, #fde4c8 100%);
+  --aurora-1: rgb(224 122 63 / 0.4);
+  --aurora-2: rgb(242 177 52 / 0.25);
+  --aurora-3: rgb(140 70 90 / 0.35);
+  --particle-rgb: 248, 197, 143;
+}
+
+/* ---------- Thème « Émeraude » : jade, menthe, corail ---------- */
+:root[data-theme="emeraude"] {
+  --color-noir-950: #04130f;
+  --color-noir-900: #0a1f19;
+  --color-noir-800: #112c24;
+  --color-noir-700: #1a3a30;
+  --color-gold-200: #d1fae5;
+  --color-gold-300: #a7f3d0;
+  --color-gold-400: #6ee7b7;
+  --color-gold-500: #34d399;
+  --color-gold-600: #10b981;
+  --color-rose-300: #fecdd3;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-plum-500: #14b8a6;
+  --color-jasmine-50: #effcf6;
+  --color-jasmine-100: #dcf5ea;
+  --text-gradient: linear-gradient(110deg, #10b981 0%, #a7f3d0 30%, #6ee7b7 50%, #14b8a6 72%, #d1fae5 100%);
+  --aurora-1: rgb(16 185 129 / 0.35);
+  --aurora-2: rgb(20 184 166 / 0.3);
+  --aurora-3: rgb(251 113 133 / 0.18);
+  --particle-rgb: 110, 231, 183;
+}
+
+/* ---------- Thème « Claire » (light): ivoire, encre, bordeaux ----------
+   The dark UI draws hairlines/tints with white at low opacity (bg-white/5, border-white/10…).
+   Here "white" is redefined as ink, so those become subtle dark hairlines on ivory. The few places
+   that need true white use bg-[#fff]/text-[#fff]. Pale status tints get darker, readable variants. */
+:root[data-theme="claire"] {
+  color-scheme: light;
+  --color-white: #1d1820;
+  --color-noir-950: #faf7f2;
+  --color-noir-900: #ffffff;
+  --color-noir-800: #f3eee6;
+  --color-noir-700: #e8e1d6;
+  --color-gold-200: #6e2a3c;
+  --color-gold-300: #7f3346;
+  --color-gold-400: #973f55;
+  --color-gold-500: #ad4d63;
+  --color-gold-600: #c06276;
+  --color-rose-200: #9a3412;
+  --color-rose-300: #9a3412;
+  --color-rose-400: #c2410c;
+  --color-rose-500: #c2410c;
+  --color-plum-500: #b07a8a;
+  --color-jasmine-50: #1d1820;
+  --color-jasmine-100: #2c2530;
+  --color-emerald-200: #047857;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-emerald-500: #047857;
+  --color-sky-200: #0369a1;
+  --color-sky-300: #0369a1;
+  --color-violet-200: #6d28d9;
+  --shadow-card: 0 24px 48px -28px rgb(70 40 50 / 0.22);
+  --text-gradient: linear-gradient(110deg, #6e2a3c 0%, #ad4d63 35%, #c2410c 55%, #973f55 75%, #6e2a3c 100%);
+  --aurora-1: rgb(173 77 99 / 0.16);
+  --aurora-2: rgb(194 65 12 / 0.1);
+  --aurora-3: rgb(214 178 120 / 0.22);
+  --particle-rgb: 151, 63, 85;
+}
+:root[data-theme="claire"] .glass {
+  background: rgb(255 255 255 / 0.72);
+  border-color: rgb(29 24 32 / 0.08);
+  box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.9) inset, var(--shadow-card);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;

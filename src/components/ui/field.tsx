@@ -36,7 +36,7 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
       className={cn("relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none",
         checked ? "bg-gold-400" : "bg-white/15")}
     >
-      <span className={cn("inline-block size-5 rounded-full bg-white shadow transition", checked ? "translate-x-5.5" : "translate-x-0.5")} />
+      <span className={cn("inline-block size-5 rounded-full bg-[#fff] shadow transition", checked ? "translate-x-5.5" : "translate-x-0.5")} />
     </button>
   );
 }

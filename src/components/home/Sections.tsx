@@ -66,7 +66,7 @@ export function Promotions() {
               <CoverArt name={c.name} palette={c.palette} className="h-72 w-full transition duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-noir-950 via-noir-950/40 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7">
-                <span className="inline-block rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-white">-{c.promo!.discountPercent}%</span>
+                <span className="inline-block rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-[#fff]">-{c.promo!.discountPercent}%</span>
                 <h3 className="mt-3 font-display text-3xl font-semibold">{c.promo!.title}</h3>
                 <p className="mt-1 text-sm text-jasmine-50/65">{c.name} · jusqu&apos;au {new Date(c.promo!.until).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</p>
               </div>

@@ -25,7 +25,8 @@ export class DashError extends Error {}
 
 /** In demo mode the visitor acts as OWNER of every demo center, so there is nothing real to protect. */
 export async function dashboardActor(): Promise<Actor | null> {
-  if (isDemo()) return { id: "demo-owner", role: "CUSTOMER", memberships: DEMO_CENTERS.map((c) => ({ centerId: c.id, role: "OWNER" as const })) };
+  // Demo mode: the visitor is super admin + owner of every demo center, so every screen is explorable.
+  if (isDemo()) return { id: "demo-owner", role: "SUPER_ADMIN", memberships: DEMO_CENTERS.map((c) => ({ centerId: c.id, role: "OWNER" as const })) };
   return currentActor();
 }
 
@@ -286,7 +287,7 @@ export function audit(actor: Actor, action: string, centerId: string, resource: 
   if (isDemo()) return;
   after(async () => {
     try {
-      await AuditLog.create({ actorId: actor.id, actorRole: actor.role, action, centerId, resource, diff });
+      await AuditLog.create({ actorId: actor.id, actorRole: actor.role, action, centerId: centerId || undefined, resource, diff });
     } catch (e) {
       console.error("audit log failed", e);
     }

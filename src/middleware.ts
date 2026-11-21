@@ -36,11 +36,11 @@ export default auth((req) => {
 
   // 3. Coarse RBAC gates (fine-grained checks happen in each handler via authorize()).
   const user = req.auth?.user;
-  if (pathname.startsWith("/admin") && user?.role !== "SUPER_ADMIN") {
+  // Demo mode (no database): dashboard & admin run on fictitious in-memory data, open for exploration.
+  const demoMode = !process.env.MONGODB_URI;
+  if (!demoMode && pathname.startsWith("/admin") && user?.role !== "SUPER_ADMIN") {
     return NextResponse.redirect(new URL(user ? "/" : `/login?next=${encodeURIComponent(pathname)}`, req.url));
   }
-  // Demo mode (no database): the dashboard runs on fictitious in-memory data, so it is open for exploration.
-  const demoMode = !process.env.MONGODB_URI;
   if (!demoMode && pathname.startsWith("/dashboard") && !(user?.role === "SUPER_ADMIN" || (user?.memberships?.length ?? 0) > 0)) {
     return NextResponse.redirect(new URL(user ? "/partenaires" : `/login?next=${encodeURIComponent(pathname)}`, req.url));
   }

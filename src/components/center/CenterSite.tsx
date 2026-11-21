@@ -46,8 +46,8 @@ export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) 
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--c-bg)] via-[color-mix(in_srgb,var(--c-bg)_30%,transparent)] to-transparent" />
         <div className="absolute inset-x-0 top-0">
           <div className="container-lux flex items-center justify-between py-4">
-            <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm text-white backdrop-blur-md"><ArrowLeft className="size-4" /> Hajemti</Link>
-            {c.plan !== "FREE" && <span className="inline-flex items-center gap-1 rounded-full bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md"><Sparkles className="size-3" /> {c.plan}</span>}
+            <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-sm text-[#fff] backdrop-blur-md"><ArrowLeft className="size-4" /> Hajemti</Link>
+            {c.plan !== "FREE" && <span className="inline-flex items-center gap-1 rounded-full bg-black/40 px-3 py-1.5 text-xs font-semibold text-[#fff] backdrop-blur-md"><Sparkles className="size-3" /> {c.plan}</span>}
           </div>
         </div>
         <div className="container-lux relative -mt-28 pb-6 md:-mt-36">

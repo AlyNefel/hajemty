@@ -33,7 +33,7 @@ const SELF_PERMISSIONS = [
 
 const ADMIN_PERMISSIONS = [
   "admin.users", "admin.centers", "admin.reviews", "admin.subscriptions", "admin.payments", "admin.ads", "admin.reports",
-  "review.moderate",
+  "admin.appearance", "review.moderate",
 ] as const;
 
 export type CenterPermission = keyof typeof CENTER_PERMISSIONS;
