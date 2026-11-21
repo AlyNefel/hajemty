@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { authConfig } from "./auth.config";
 import { limitKindFor, rateLimit } from "./lib/rate-limit";
+import { demoAdminOpen, isDemoMode } from "./lib/demo";
 
 const { auth } = NextAuth(authConfig);
 
@@ -36,9 +37,10 @@ export default auth((req) => {
 
   // 3. Coarse RBAC gates (fine-grained checks happen in each handler via authorize()).
   const user = req.auth?.user;
-  // Demo mode (no database): dashboard & admin run on fictitious in-memory data, open for exploration.
-  const demoMode = !process.env.MONGODB_URI;
-  if (!demoMode && pathname.startsWith("/admin") && user?.role !== "SUPER_ADMIN") {
+  // Demo mode (no database): the dashboard runs on fictitious in-memory data, open for exploration.
+  // The super-admin area re-themes the whole site, so on deployments it stays locked (src/lib/demo.ts).
+  const demoMode = isDemoMode();
+  if (!demoAdminOpen() && pathname.startsWith("/admin") && user?.role !== "SUPER_ADMIN") {
     return NextResponse.redirect(new URL(user ? "/" : `/login?next=${encodeURIComponent(pathname)}`, req.url));
   }
   if (!demoMode && pathname.startsWith("/dashboard") && !(user?.role === "SUPER_ADMIN" || (user?.memberships?.length ?? 0) > 0)) {

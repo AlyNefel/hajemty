@@ -51,7 +51,8 @@ async function load(): Promise<AppearanceSettings> {
   }
 }
 
-export const getAppearance = unstable_cache(load, ["platform-appearance"], { tags: [SETTINGS_TAG], revalidate: 3600 });
+// Key versioned: v2 discards any value cached while the demo admin was publicly reachable.
+export const getAppearance = unstable_cache(load, ["platform-appearance-v2"], { tags: [SETTINGS_TAG], revalidate: 3600 });
 
 export async function saveAppearance(input: AppearanceSettings, actorId: string): Promise<AppearanceSettings> {
   const s = normalize(input);

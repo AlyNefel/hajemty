@@ -7,6 +7,7 @@ import { computeAvailability, bookingRef } from "@/lib/booking/availability";
 import { createBooking, transitionBooking, BookingError } from "@/lib/booking/service";
 import { BOOKING_TRANSITIONS, isActive, type BookingStatus } from "@/lib/booking/status";
 import { connectDB, hasDatabase } from "@/lib/db";
+import { demoAdminOpen } from "@/lib/demo";
 import { STAFF_LIMIT, type Plan } from "@/lib/plans";
 import type { Actor } from "@/lib/rbac";
 import { Booking } from "@/models/Booking";
@@ -25,8 +26,15 @@ export class DashError extends Error {}
 
 /** In demo mode the visitor acts as OWNER of every demo center, so there is nothing real to protect. */
 export async function dashboardActor(): Promise<Actor | null> {
-  // Demo mode: the visitor is super admin + owner of every demo center, so every screen is explorable.
-  if (isDemo()) return { id: "demo-owner", role: "SUPER_ADMIN", memberships: DEMO_CENTERS.map((c) => ({ centerId: c.id, role: "OWNER" as const })) };
+  // Demo mode: the visitor owns every demo center, so every dashboard screen is explorable.
+  // Super-admin powers (site-wide appearance) only locally or with DEMO_ADMIN=open; see src/lib/demo.ts.
+  if (isDemo()) {
+    return {
+      id: "demo-owner",
+      role: demoAdminOpen() ? "SUPER_ADMIN" : "CUSTOMER",
+      memberships: DEMO_CENTERS.map((c) => ({ centerId: c.id, role: "OWNER" as const })),
+    };
+  }
   return currentActor();
 }
 

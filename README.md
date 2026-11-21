@@ -75,7 +75,11 @@ Code: `src/app/dashboard`, `src/components/dashboard`, `src/lib/dashboard` (`rep
 
 ## Themes & super admin
 
-Six platform palettes (Jasmin & Or, Électrique, Claire, Sidi Bou Saïd, Sahara, Émeraude). The super admin chooses the default and the themes visitors can pick at **`/admin/apparence`** (see docs/07-design-system.md §8.5). In demo mode you are super admin automatically. With a database, give your account the role first:
+Six platform palettes (Jasmin & Or, Électrique, Claire, Sidi Bou Saïd, Sahara, Émeraude). The super admin chooses the default and the themes visitors can pick at **`/admin/apparence`** (see docs/07-design-system.md §8.5).
+
+- **Demo mode, local:** you are super admin automatically.
+- **Demo mode, deployed on Vercel:** `/admin` is **locked**, because it would let any visitor re-theme the public site. The demo dashboard stays open. To open the admin on a private deployment, set `DEMO_ADMIN=open` (see `src/lib/demo.ts`).
+- **With a database:** give your account the role first:
 
 ```bash
 npm run grant-role -- you@example.com super-admin
