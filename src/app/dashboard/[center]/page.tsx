@@ -97,7 +97,7 @@ export default async function Overview({ params }: Props) {
         </Link>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="glass rounded-2xl p-5 md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-2xl font-semibold">Prochains rendez-vous</h2>

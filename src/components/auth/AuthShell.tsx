@@ -7,7 +7,7 @@ export const safeNext = (n?: string) => (n?.startsWith("/") && !n.startsWith("//
 
 export function AuthShell({ title, lede, children }: { title: string; lede: string; children: React.ReactNode }) {
   return (
-    <main className="relative grid min-h-dvh place-items-center overflow-hidden px-4 py-12">
+    <main className="relative grid min-h-dvh grid-cols-[minmax(0,1fr)] place-items-center overflow-hidden px-4 py-12">
       <Aurora />
       <div className="glass relative w-full max-w-md rounded-[32px] p-7 text-center md:p-10">
         <div className="flex justify-center"><Logo /></div>
