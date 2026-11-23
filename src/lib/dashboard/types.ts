@@ -74,6 +74,12 @@ export type ReviewView = {
   status: "visible" | "flagged" | "hidden";
 };
 
+/** A hosted image (Cloudinary in production). */
+export type Photo = { url: string; alt?: string; publicId?: string; w?: number; h?: number };
+/** Cover + gallery shown on the public page, cards and share previews. */
+export type CenterPhotos = { cover?: Photo; gallery: Photo[] };
+export const GALLERY_MAX = 12;
+
 /** Editable center profile & booking rules (dashboard → Paramètres). */
 export type CenterSettings = {
   description: string;

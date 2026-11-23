@@ -6,10 +6,11 @@ import { ACTION_LABEL, BOOKING_STATUSES } from "@/lib/booking/status";
 import { authorize, ForbiddenError, type Actor, type CenterPermission } from "@/lib/rbac";
 import {
   audit, createStaffBooking, dashboardActor, DashError, deleteService, getBookingEmployee, getDashCenter,
-  saveService, saveSettings, saveStaff, setBookingStatus,
+  savePhotos, saveService, saveSettings, saveStaff, setBookingStatus,
 } from "./repo";
+import { isOwnUpload, uploadTicket } from "@/lib/media";
 import { replyToReview, ReviewError, setReviewFlag } from "@/lib/reviews/repo";
-import type { ActionResult, DashCenter } from "./types";
+import { GALLERY_MAX, type ActionResult, type DashCenter } from "./types";
 
 /**
  * Server Actions are public HTTP endpoints. Every one of them re-resolves the actor, re-checks
@@ -198,5 +199,41 @@ export async function saveSettingsAction(centerSlug: string, input: z.input<type
     await saveSettings(center.id, { ...data, openingHours: data.openingHours.map((h) => ({ ...h, breaks: [] })) });
     audit(actor, "center.settings", center.id, { type: "center", id: center.id });
     refresh(center.slug, true);
+  });
+}
+
+/* ------------------------------------------------------------------ photos */
+
+const photoFolder = (centerId: string) => `hajemti/centers/${centerId}`;
+
+/** Short-lived signature letting the owner's browser upload straight to our Cloudinary folder. */
+export async function photoUploadTicketAction(centerSlug: string) {
+  return run(async () => {
+    const { center } = await guard(slug.parse(centerSlug), "center.update");
+    const ticket = uploadTicket(photoFolder(center.id));
+    if (!ticket) throw new DashError("L'envoi de photos n'est pas encore activé sur cette plateforme (Cloudinary non configuré).");
+    return ticket;
+  });
+}
+
+const PhotoSchema = z.object({
+  url: z.string().url().max(500),
+  alt: z.string().trim().max(140).optional(),
+  publicId: z.string().max(200).optional(),
+  w: z.number().int().positive().max(20000).optional(),
+  h: z.number().int().positive().max(20000).optional(),
+});
+const PhotosSchema = z.object({ cover: PhotoSchema.optional(), gallery: z.array(PhotoSchema).max(GALLERY_MAX, `${GALLERY_MAX} photos maximum`) });
+
+export async function savePhotosAction(centerSlug: string, input: z.input<typeof PhotosSchema>) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "center.update");
+    const data = PhotosSchema.parse(input);
+    const folder = photoFolder(center.id);
+    if (![data.cover, ...data.gallery].every((p) => !p || isOwnUpload(p.url, folder))) throw new DashError("Photo refusée : elle doit être envoyée depuis votre espace pro.");
+    await savePhotos(center.id, data);
+    audit(actor, "center.photos", center.id, { type: "center", id: center.id });
+    refresh(center.slug, true);
+    revalidatePath("/", "layout");
   });
 }

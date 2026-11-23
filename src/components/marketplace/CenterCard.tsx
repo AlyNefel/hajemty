@@ -1,15 +1,29 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, MapPin, Sparkles } from "lucide-react";
 import { CATEGORIES, governorateBySlug } from "@/data/tunisia";
 import type { CenterCardView } from "@/lib/repositories/centers";
-import { formatTND } from "@/lib/utils";
+import { cn, formatTND } from "@/lib/utils";
 import { TiltCard } from "@/components/effects/TiltCard";
 import { Badge } from "@/components/ui/badge";
 import { RatingStars } from "@/components/ui/rating-stars";
 
 /** Generated cover art: a gradient monogram, used until the center uploads a cover to Cloudinary. */
-export function CoverArt({ name, palette, className }: { name: string; palette: [string, string]; className?: string }) {
+/**
+ * Center visual: the uploaded photo when there is one, otherwise monogram artwork in the center's
+ * palette. `sizes` must describe the rendered width so the CDN serves the right resolution.
+ */
+export function CoverArt({ name, palette, className, src, alt, sizes = "100vw", priority }: {
+  name: string; palette: [string, string]; className?: string; src?: string; alt?: string; sizes?: string; priority?: boolean;
+}) {
   const [a, b] = palette;
+  if (src) {
+    return (
+      <div className={cn("relative overflow-hidden", className)} style={{ background: a }}>
+        <Image src={src} alt={alt ?? name} fill sizes={sizes} priority={priority} className="object-cover" />
+      </div>
+    );
+  }
   return (
     <div className={className} style={{ background: `radial-gradient(120% 90% at 85% 10%, ${b}55, transparent 55%), radial-gradient(90% 80% at 0% 100%, ${b}33, transparent 60%), linear-gradient(160deg, ${a}, #0b0710)` }}>
       <div className="grain relative flex h-full w-full items-center justify-center overflow-hidden">
@@ -29,7 +43,7 @@ export function CenterCard({ c }: { c: CenterCardView }) {
     <TiltCard className="h-full rounded-3xl">
       <Link href={`/center/${c.slug}`} className="glass block h-full overflow-hidden rounded-3xl focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none">
         <div className="relative aspect-[4/3]">
-          <CoverArt name={c.name} palette={c.palette} className="h-full w-full" />
+          <CoverArt name={c.name} palette={c.palette} src={c.coverUrl} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="h-full w-full" />
           <div className="absolute inset-x-3 top-3 flex flex-wrap items-center gap-1.5">
             {c.openNow ? <Badge variant="success">Ouvert</Badge> : <Badge variant="glass">Fermé</Badge>}
             {(c.plan === "PREMIUM" || c.plan === "ENTERPRISE") && <Badge variant="gold"><Sparkles className="size-3" /> Premium</Badge>}

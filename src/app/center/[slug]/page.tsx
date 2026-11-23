@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     description,
     alternates: { canonical: `/center/${c.slug}`, languages: { "fr-TN": `/center/${c.slug}`, "ar-TN": `/ar/center/${c.slug}`, "x-default": `/center/${c.slug}` } },
     openGraph: { title, description, type: "website", url: `${SITE_URL}/center/${c.slug}` },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

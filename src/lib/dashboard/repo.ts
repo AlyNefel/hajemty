@@ -16,7 +16,7 @@ import { Employee, Service } from "@/models/Catalog";
 import { AuditLog, Review } from "@/models/Engagement";
 import { addDays, localToIso, tunisDateOf } from "./dates";
 import { demoStore } from "./demo-store";
-import type { CenterSettings, DashBooking, DashCenter, DashService, DashStaff } from "./types";
+import type { CenterPhotos, CenterSettings, DashBooking, DashCenter, DashService, DashStaff, Photo } from "./types";
 
 export const isDemo = () => !hasDatabase();
 
@@ -332,6 +332,32 @@ export async function saveSettings(centerId: string, s: CenterSettings) {
       "bookingSettings.autoConfirm": s.autoConfirm, "bookingSettings.minNoticeMin": s.minNoticeMin,
       "bookingSettings.cancellationWindowMin": s.cancellationWindowMin, "bookingSettings.slotStepMin": s.slotStepMin,
     },
+  });
+}
+
+/* ------------------------------------------------------------------ photos */
+
+type MediaDoc = { url?: string | null; alt?: string | null; publicId?: string | null; w?: number | null; h?: number | null } | null | undefined;
+export const photoFromMedia = (m: MediaDoc): Photo | undefined =>
+  m?.url ? { url: m.url, alt: m.alt ?? undefined, publicId: m.publicId ?? undefined, w: m.w ?? undefined, h: m.h ?? undefined } : undefined;
+const toMedia = (p: Photo) => ({ url: p.url, alt: p.alt, publicId: p.publicId, w: p.w, h: p.h, type: "image" });
+
+export async function getPhotos(centerId: string): Promise<CenterPhotos> {
+  if (isDemo()) return structuredClone(demoStore(centerId).photos);
+  await connectDB();
+  const c = await Center.findById(centerId, { media: 1 }).lean();
+  if (!c) throw new DashError("Établissement introuvable");
+  return { cover: photoFromMedia(c.media?.cover), gallery: (c.media?.gallery ?? []).map(photoFromMedia).filter((p): p is Photo => !!p) };
+}
+
+export async function savePhotos(centerId: string, p: CenterPhotos) {
+  if (isDemo()) {
+    demoStore(centerId).photos = structuredClone(p);
+    return;
+  }
+  await connectDB();
+  await Center.updateOne({ _id: centerId }, {
+    $set: { "media.cover": p.cover ? toMedia(p.cover) : null, "media.gallery": p.gallery.map(toMedia) },
   });
 }
 

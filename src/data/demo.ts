@@ -3,6 +3,7 @@ import type { Plan } from "@/lib/plans";
 import type { Theme } from "@/lib/theme/schema";
 import { defaultTheme } from "@/lib/theme/templates";
 import type { DayHours } from "@/lib/booking/availability";
+import type { CenterPhotos } from "@/lib/dashboard/types";
 
 /** View model shared by the demo dataset and the Mongo repository. */
 export type CenterView = {
@@ -34,6 +35,8 @@ export type CenterView = {
   reviews: { author: string; rating: number; comment: string; date: string; service: string }[];
   promo?: { title: string; discountPercent: number; until: string };
   theme: Theme;
+  /** Uploaded photos; without them the page falls back to the palette artwork. */
+  photos?: CenterPhotos;
 };
 
 const tueSun = (open: number, close: number, breaks: DayHours["breaks"] = []): DayHours[] =>

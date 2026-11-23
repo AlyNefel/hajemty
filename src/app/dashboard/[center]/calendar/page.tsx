@@ -13,7 +13,11 @@ export default async function CalendarPage({ params, searchParams }: Props) {
   if (!center) notFound();
 
   const today = todayTunis();
-  const date = isValidDate(sp.date) ? sp.date : today;
+  // No date in the URL: open on today, or on the next day the salon is open (a closed Monday
+  // would otherwise greet the owner with an empty grid).
+  const openDays = new Set(center.openingHours.map((h) => h.day));
+  const firstOpen = Array.from({ length: 7 }, (_, i) => addDays(today, i)).find((d) => openDays.has(dayOfWeekOf(d))) ?? today;
+  const date = isValidDate(sp.date) ? sp.date : firstOpen;
   const monday = weekStart(date);
   const [weekBookings, allStaff, services] = await Promise.all([listBookings(center, monday, 7), listStaff(center.id), listServices(center.id)]);
 

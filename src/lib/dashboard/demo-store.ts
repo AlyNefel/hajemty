@@ -4,7 +4,7 @@ import { bookingRef } from "@/lib/booking/availability";
 import type { BookingStatus } from "@/lib/booking/status";
 import { reviewStats } from "@/lib/reviews/stats";
 import { addDays, dayOfWeekOf, localToIso, todayTunis } from "./dates";
-import type { CenterSettings, DashBooking, DashService, DashStaff, ReviewView } from "./types";
+import type { CenterPhotos, CenterSettings, DashBooking, DashService, DashStaff, ReviewView } from "./types";
 
 /**
  * In-memory store used when MONGODB_URI is not set. It is seeded deterministically from the demo
@@ -18,6 +18,7 @@ type CenterStore = {
   bookings: DashBooking[];
   reviews: ReviewView[];
   settings: CenterSettings;
+  photos: CenterPhotos;
 };
 const g = globalThis as unknown as { __hajemtiDemo?: Map<string, CenterStore>; __hajemtiDemoCustomers?: Set<string> };
 const stores: Map<string, CenterStore> = (g.__hajemtiDemo ??= new Map());
@@ -80,7 +81,7 @@ function seed(centerId: string): CenterStore {
     addressLine: c?.address ?? "", delegation: c?.delegation ?? "", openingHours: structuredClone(c?.openingHours ?? []),
     autoConfirm: true, minNoticeMin: 60, cancellationWindowMin: 240, slotStepMin: 15,
   };
-  if (!c) return { services: [], staff: [], bookings: [], reviews: [], settings };
+  if (!c) return { services: [], staff: [], bookings: [], reviews: [], settings, photos: { gallery: [] } };
 
   const services: DashService[] = c.services.map((s, i) => ({
     id: s.id, category: s.category, name: s.name, durationMin: s.durationMin, bufferAfterMin: 0,
@@ -157,7 +158,7 @@ function seed(centerId: string): CenterStore {
     }
   }
   reviews.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return { services, staff, bookings, reviews, settings };
+  return { services, staff, bookings, reviews, settings, photos: { gallery: [] } };
 }
 
 export function demoStore(centerId: string): CenterStore {
@@ -184,6 +185,7 @@ export function demoPublicView(c: CenterView): CenterView {
     address: s.settings.addressLine,
     delegation: s.settings.delegation,
     openingHours: s.settings.openingHours,
+    photos: structuredClone(s.photos),
     services: active.map((x) => ({ id: x.id, category: x.category, name: x.name, durationMin: x.durationMin, priceMillimes: x.priceMillimes, popular: popular.has(x.id) })),
     priceFromMillimes: active.length ? Math.min(...active.map((x) => x.priceMillimes)) : 0,
     team: s.staff.filter((x) => x.isBookable).map((x) => ({ id: x.id, name: x.name, title: x.title })),

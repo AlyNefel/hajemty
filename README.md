@@ -79,6 +79,7 @@ Six platform palettes (Jasmin & Or, Électrique, Claire, Sidi Bou Saïd, Sahara,
 
 - **Demo mode, local:** you are super admin automatically.
 - **Demo mode, deployed on Vercel:** `/admin` is **locked**, because it would let any visitor re-theme the public site. The demo dashboard stays open. To open the admin on a private deployment, set `DEMO_ADMIN=open` (see `src/lib/demo.ts`).
+- **Salon photos:** owners upload a cover and up to 12 gallery photos in *Espace pro → Paramètres → Photos*. Files go from the browser straight to Cloudinary with a server-signed ticket (`src/lib/media.ts`), into `hajemti/centers/<id>/`. Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` on the deployment to enable it; without them the section explains that uploads are not available yet. Each salon also gets a generated share image (`/center/<slug>/opengraph-image`).
 - **With a database:** give your account the role first:
 
 ```bash
@@ -87,4 +88,4 @@ npm run grant-role -- you@example.com owner maison-jasmin-la-marsa   # salon das
 ```
 
 ## Next steps (Phase 1)
-WhatsApp/email notifications via a queue, Cloudinary signed uploads, reviews flow, Atlas Search index, Upstash rate limiting, Arabic `/ar` locale with RTL, the theme builder UI, staff invitations, and drag-and-drop rescheduling in the calendar.
+WhatsApp/email notifications via a queue, reviews flow, Atlas Search index, Upstash rate limiting, Arabic `/ar` locale with RTL, the theme builder UI, staff invitations, and drag-and-drop rescheduling in the calendar.

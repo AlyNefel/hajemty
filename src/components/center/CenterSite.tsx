@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Clock, Instagram, MapPin, MessageCircle, Phone, Sparkles } from "lucide-react";
 import type { CenterView } from "@/data/demo";
@@ -9,6 +10,7 @@ import { formatTND } from "@/lib/utils";
 import { CoverArt } from "@/components/marketplace/CenterCard";
 import { Reveal } from "@/components/effects/Reveal";
 import { BookingWidget } from "./BookingWidget";
+import { MobileBookBar, ServiceRow } from "./BookingTriggers";
 import { ReviewsSection, type PublicReview } from "./ReviewsSection";
 import type { ReviewStats } from "@/lib/reviews/stats";
 
@@ -31,7 +33,7 @@ export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) 
     hero: () => null, // rendered above the grid
     services: () => <Services c={c} />,
     team: () => <Team c={c} />,
-    gallery: () => <Gallery c={c} />,
+    gallery: () => (c.photos?.gallery.length ? <Gallery c={c} /> : null),
     reviews: () => (reviews ? <ReviewsSection slug={c.slug} centerName={c.name} initial={reviews.items} total={reviews.total} stats={reviews.stats} /> : null),
     about: () => <About c={c} />,
     hours_location: () => <Hours c={c} />,
@@ -42,7 +44,7 @@ export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) 
     <div className="site-root min-h-dvh" style={themeToCssVars(theme.tokens)}>
       {/* Hero */}
       <header className="relative">
-        <CoverArt name={c.name} palette={c.palette} className="h-[42vh] min-h-72 w-full md:h-[52vh]" />
+        <CoverArt name={c.name} palette={c.palette} src={c.photos?.cover?.url} alt={c.photos?.cover?.alt ?? c.name} priority className="h-[42vh] min-h-72 w-full md:h-[52vh]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--c-bg)] via-[color-mix(in_srgb,var(--c-bg)_30%,transparent)] to-transparent" />
         <div className="absolute inset-x-0 top-0">
           <div className="container-lux flex items-center justify-between py-4">
@@ -77,10 +79,11 @@ export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) 
             return node ? wrap(node, i) : null;
           })}
         </main>
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="scroll-mt-4 lg:sticky lg:top-6 lg:self-start">
           <BookingWidget center={c} />
         </aside>
       </div>
+      {c.services.length > 0 && <MobileBookBar priceLabel={formatTND(Math.min(...c.services.map((s) => s.priceMillimes)))} />}
     </div>
   );
 }
@@ -98,12 +101,14 @@ function Services({ c }: Props) {
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--c-primary)]">{cat}</h3>
             <ul className="site-card divide-y divide-current/10 overflow-hidden">
               {list!.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-4 p-4">
-                  <div>
-                    <p className="font-medium">{s.name} {s.popular && <span className="ms-2 rounded-full bg-[var(--c-primary)]/15 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--c-primary)]">Populaire</span>}</p>
-                    <p className="text-sm text-[var(--c-muted)]">{s.durationMin} min</p>
-                  </div>
-                  <p className="shrink-0 font-semibold">{formatTND(s.priceMillimes)}</p>
+                <li key={s.id}>
+                  <ServiceRow serviceId={s.id}>
+                    <div className="min-w-0">
+                      <p className="font-medium">{s.name} {s.popular && <span className="ms-2 rounded-full bg-[var(--c-primary)]/15 px-2 py-0.5 text-[11px] font-bold uppercase text-[var(--c-primary)]">Populaire</span>}</p>
+                      <p className="text-sm text-[var(--c-muted)]">{s.durationMin} min</p>
+                    </div>
+                    <p className="ms-auto shrink-0 font-semibold">{formatTND(s.priceMillimes)}</p>
+                  </ServiceRow>
                 </li>
               ))}
             </ul>
@@ -131,16 +136,20 @@ function Team({ c }: Props) {
   );
 }
 
+/** Only rendered when the center has uploaded photos: placeholder art is not a gallery. */
 function Gallery({ c }: Props) {
+  const photos = c.photos?.gallery ?? [];
   return (
     <section>
       <H2>Galerie</H2>
       <div className="grid grid-cols-3 gap-3">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <CoverArt key={i} name={c.name} palette={[c.palette[0], i % 2 ? c.palette[1] : "#ffffff"]} className={`overflow-hidden rounded-[var(--radius)] ${i === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"} [&_span]:text-3xl`} />
+        {photos.map((p, i) => (
+          <a key={p.url} href={p.url} target="_blank" rel="noopener noreferrer"
+            className={`relative block overflow-hidden rounded-[var(--radius)] ${i === 0 && photos.length >= 3 ? "col-span-2 row-span-2" : ""} aspect-square`}>
+            <Image src={p.url} alt={p.alt ?? `${c.name}, photo ${i + 1}`} fill sizes={i === 0 ? "(min-width: 1024px) 520px, 66vw" : "(min-width: 1024px) 260px, 33vw"} className="object-cover transition duration-500 hover:scale-105" />
+          </a>
         ))}
       </div>
-      <p className="mt-3 text-xs text-[var(--c-muted)]">Galerie de démonstration. Les photos sont servies par Cloudinary en production.</p>
     </section>
   );
 }

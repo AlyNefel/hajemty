@@ -6,6 +6,7 @@ import { demoPublicView } from "@/lib/dashboard/demo-store";
 import { connectDB, hasDatabase } from "@/lib/db";
 import { bayesianRating } from "@/lib/reviews/stats";
 import { fold, scoreDocument, tokenize, type Field } from "@/lib/search/match";
+import type { Photo } from "@/lib/dashboard/types";
 import { defaultTheme } from "@/lib/theme/templates";
 import { distanceKm } from "@/lib/utils";
 import { Center } from "@/models/Center";
@@ -33,7 +34,7 @@ export type CenterSearch = {
 export type CenterCardView = Pick<
   CenterView,
   "id" | "slug" | "name" | "tagline" | "categories" | "governorate" | "delegation" | "rating" | "reviewCount" | "priceFromMillimes" | "verified" | "plan" | "palette" | "genderFocus" | "promo"
-> & { distanceKm?: number; openNow: boolean; matchedService?: string };
+> & { distanceKm?: number; openNow: boolean; matchedService?: string; coverUrl?: string };
 
 /** Everything search needs to filter, score and render a card (no full hydration). */
 type Candidate = Omit<CenterCardView, "distanceKm" | "openNow" | "matchedService"> & {
@@ -53,7 +54,7 @@ export function isOpenNow(hours: CenterView["openingHours"], now = new Date()) {
 const fromView = (c: CenterView): Candidate => ({
   id: c.id, slug: c.slug, name: c.name, tagline: c.tagline, categories: c.categories, governorate: c.governorate, delegation: c.delegation,
   rating: c.rating, reviewCount: c.reviewCount, priceFromMillimes: c.priceFromMillimes, verified: c.verified, plan: c.plan,
-  palette: c.palette, genderFocus: c.genderFocus, promo: c.promo,
+  palette: c.palette, genderFocus: c.genderFocus, promo: c.promo, coverUrl: c.photos?.cover?.url,
   location: c.location, openingHours: c.openingHours, description: c.description, serviceNames: c.services.map((s) => s.name),
 });
 
@@ -219,7 +220,7 @@ async function mongoCandidates(s: CenterSearch): Promise<Candidate[]> {
   }
   const docs = await Center.find(filter, {
     slug: 1, name: 1, description: 1, categories: 1, address: 1, location: 1, stats: 1, priceFromMillimes: 1,
-    verified: 1, plan: 1, genderFocus: 1, openingHours: 1, "theme.tokens.colors": 1,
+    verified: 1, plan: 1, genderFocus: 1, openingHours: 1, "theme.tokens.colors": 1, "media.cover.url": 1,
   }).sort({ "stats.score": -1 }).limit(300).lean();
 
   const services = await Service.find({ centerId: { $in: docs.map((d) => d._id) }, isActive: true }, { centerId: 1, "name.fr": 1 }).lean();
@@ -236,11 +237,14 @@ async function mongoCandidates(s: CenterSearch): Promise<Candidate[]> {
       palette: [d.theme?.tokens?.colors?.surface ?? "#140d1c", d.theme?.tokens?.colors?.primary ?? "#e5c07b"],
       location: { lat, lng }, openingHours: (d.openingHours ?? []) as CenterView["openingHours"],
       description: d.description?.fr ?? "", serviceNames: byCenter.get(String(d._id)) ?? [],
+      coverUrl: d.media?.cover?.url ?? undefined,
     };
   });
 }
 
 const leanOne = () => Center.findOne().lean();
+type MediaLean = { url?: string | null; alt?: string | null; w?: number | null; h?: number | null } | null | undefined;
+const photo = (m: MediaLean): Photo | undefined => (m?.url ? { url: m.url, alt: m.alt ?? undefined, w: m.w ?? undefined, h: m.h ?? undefined } : undefined);
 type CenterLean = NonNullable<Awaited<ReturnType<typeof leanOne>>>;
 
 async function hydrate(doc: CenterLean): Promise<CenterView> {
@@ -262,5 +266,9 @@ async function hydrate(doc: CenterLean): Promise<CenterView> {
     team: team.map((e) => ({ id: String(e._id), name: e.displayName, title: e.title ?? "" })),
     reviews: [],
     theme: doc.theme ?? defaultTheme(),
+    photos: {
+      cover: photo(doc.media?.cover),
+      gallery: (doc.media?.gallery ?? []).map(photo).filter((p): p is Photo => !!p),
+    },
   };
 }
