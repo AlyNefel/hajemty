@@ -25,6 +25,7 @@ export default async function DashboardLayout({ children, params }: { children: 
   const items: NavKey[] = ["overview", "calendar"];
   if (ok("review.reply")) items.push("reviews");
   if (ok("analytics.read")) items.push("clients");
+  if (ok("post.manage")) items.push("mur");
   if (ok("service.manage")) items.push("services");
   if (ok("employee.manage")) items.push("staff");
   if (ok("center.update")) items.push("settings");

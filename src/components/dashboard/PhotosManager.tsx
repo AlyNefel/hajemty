@@ -3,14 +3,13 @@
 import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
 import { ImagePlus, Loader2, Star, Trash2 } from "lucide-react";
-import { photoUploadTicketAction, savePhotosAction } from "@/lib/dashboard/actions";
+import { savePhotosAction } from "@/lib/dashboard/actions";
+import { UPLOAD_ACCEPT as ACCEPT, UPLOAD_MAX_MB as MAX_MB, uploadPhoto } from "./upload";
 import { GALLERY_MAX, type CenterPhotos, type Photo } from "@/lib/dashboard/types";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
-const MAX_MB = 10;
-const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,image/heic";
 
 /**
  * Cover + gallery editor. Files go from the browser straight to Cloudinary with a signature issued
@@ -34,23 +33,7 @@ export function PhotosManager({ slug, name, initial, uploadsEnabled }: { slug: s
     });
   };
 
-  const upload = async (file: File): Promise<Photo> => {
-    if (!file.type.startsWith("image/")) throw new Error(`« ${file.name} » n'est pas une image.`);
-    if (file.size > MAX_MB * 1024 * 1024) throw new Error(`« ${file.name} » dépasse ${MAX_MB} Mo.`);
-    const r = await photoUploadTicketAction(slug);
-    if (!r.ok) throw new Error(r.error);
-    const t = { data: r.data! };
-    const body = new FormData();
-    body.set("file", file);
-    body.set("api_key", t.data.apiKey);
-    body.set("timestamp", String(t.data.timestamp));
-    body.set("folder", t.data.folder);
-    body.set("signature", t.data.signature);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${t.data.cloudName}/image/upload`, { method: "POST", body });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok || !j.secure_url) throw new Error(j.error?.message ? `Envoi refusé : ${j.error.message}` : "L'envoi de la photo a échoué, réessayez.");
-    return { url: j.secure_url, publicId: j.public_id, w: j.width, h: j.height, alt: name };
-  };
+  const upload = (file: File) => uploadPhoto(slug, file, name);
 
   const onFiles = async (files: FileList | null, target: "cover" | "gallery") => {
     if (!files?.length) return;

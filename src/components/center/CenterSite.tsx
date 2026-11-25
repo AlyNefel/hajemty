@@ -11,6 +11,7 @@ import { CoverArt } from "@/components/marketplace/CenterCard";
 import { Reveal } from "@/components/effects/Reveal";
 import { BookingWidget } from "./BookingWidget";
 import { MobileBookBar, ServiceRow } from "./BookingTriggers";
+import { CenterTabs } from "@/components/wall/CenterTabs";
 import { ReviewsSection, type PublicReview } from "./ReviewsSection";
 import type { ReviewStats } from "@/lib/reviews/stats";
 
@@ -24,7 +25,7 @@ export type CenterReviews = { items: PublicReview[]; total: number; stats: Revie
  * Theme-driven mini-site renderer (docs/12-theme-builder.md). Tokens become CSS variables, and the
  * ordered `sections` array picks which blocks render. Plan gating is re-applied at render time.
  */
-export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) {
+export function CenterSite({ c, reviews, postCount = 0 }: Props & { reviews?: CenterReviews; postCount?: number }) {
   const theme = applyPlanToTheme(c.theme, c.plan, defaultTheme(c.theme.template));
   const animate = theme.tokens.animation !== "none";
   const wrap = (node: React.ReactNode, i: number) => (animate ? <Reveal key={i} delay={0.05}>{node}</Reveal> : <div key={i}>{node}</div>);
@@ -73,11 +74,19 @@ export function CenterSite({ c, reviews }: Props & { reviews?: CenterReviews }) 
       </header>
 
       <div className="container-lux grid grid-cols-[minmax(0,1fr)] gap-10 pb-24 lg:grid-cols-[minmax(0,1fr)_400px]">
-        <main className="space-y-14">
-          {theme.sections.filter((s) => s.visible).map((s, i) => {
-            const node = RENDER[s.type]?.();
-            return node ? wrap(node, i) : null;
-          })}
+        <main className="min-w-0">
+          <CenterTabs
+            postCount={postCount}
+            center={{ slug: c.slug, name: c.name, verified: c.verified, palette: c.palette, avatarUrl: c.photos?.cover?.url }}
+            profile={
+              <div className="space-y-14">
+                {theme.sections.filter((s) => s.visible).map((s, i) => {
+                  const node = RENDER[s.type]?.();
+                  return node ? wrap(node, i) : null;
+                })}
+              </div>
+            }
+          />
         </main>
         <aside className="scroll-mt-4 lg:sticky lg:top-6 lg:self-start">
           <BookingWidget center={c} />

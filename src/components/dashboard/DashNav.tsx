@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { CalendarDays, ExternalLink, LayoutDashboard, MoreHorizontal, Scissors, Settings, Star, UserRound, Users } from "lucide-react";
+import { CalendarDays, ExternalLink, LayoutDashboard, MoreHorizontal, Newspaper, Scissors, Settings, Star, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const ICONS = {
-  overview: LayoutDashboard, calendar: CalendarDays, reviews: Star, clients: UserRound,
+  overview: LayoutDashboard, calendar: CalendarDays, reviews: Star, clients: UserRound, mur: Newspaper,
   services: Scissors, staff: Users, settings: Settings,
 } as const;
 export type NavKey = keyof typeof ICONS;
 const LABELS: Record<NavKey, string> = {
-  overview: "Aperçu", calendar: "Agenda", reviews: "Avis", clients: "Clients",
+  overview: "Aperçu", calendar: "Agenda", reviews: "Avis", clients: "Clients", mur: "Mur",
   services: "Prestations", staff: "Équipe", settings: "Paramètres",
 };
 

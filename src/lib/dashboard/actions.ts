@@ -5,10 +5,13 @@ import { z } from "zod";
 import { ACTION_LABEL, BOOKING_STATUSES } from "@/lib/booking/status";
 import { authorize, ForbiddenError, type Actor, type CenterPermission } from "@/lib/rbac";
 import {
-  audit, createStaffBooking, dashboardActor, DashError, deleteService, getBookingEmployee, getDashCenter,
+  audit, createStaffBooking, dashboardActor, DashError, deleteService, getBookingEmployee, getDashCenter, listServices, listStaff,
   savePhotos, saveService, saveSettings, saveStaff, setBookingStatus,
 } from "./repo";
 import { isOwnUpload, uploadTicket } from "@/lib/media";
+import { cleanText, WallInputError } from "@/lib/wall/logic";
+import { createPost, deletePost, updatePost, WallError } from "@/lib/wall/repo";
+import { POST_PHOTOS_MAX, POST_TEXT_MAX } from "@/lib/wall/types";
 import { replyToReview, ReviewError, setReviewFlag } from "@/lib/reviews/repo";
 import { GALLERY_MAX, type ActionResult, type DashCenter } from "./types";
 
@@ -30,7 +33,7 @@ async function run<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
   try {
     return { ok: true, data: await fn() };
   } catch (e) {
-    if (e instanceof DashError || e instanceof ReviewError) return { ok: false, error: e.message };
+    if (e instanceof DashError || e instanceof ReviewError || e instanceof WallInputError || e instanceof WallError) return { ok: false, error: e.message };
     if (e instanceof ForbiddenError) return { ok: false, error: "Vous n'avez pas les droits pour cette action" };
     if (e instanceof z.ZodError) return { ok: false, error: e.issues[0]?.message ?? "Données invalides" };
     console.error(e);
@@ -235,5 +238,62 @@ export async function savePhotosAction(centerSlug: string, input: z.input<typeof
     audit(actor, "center.photos", center.id, { type: "center", id: center.id });
     refresh(center.slug, true);
     revalidatePath("/", "layout");
+  });
+}
+
+/* ------------------------------------------------------------------ wall (Mur) */
+
+const PostSchema = z.object({
+  kind: z.enum(["work", "before_after", "promo", "news"]),
+  text: z.string().max(POST_TEXT_MAX * 2),
+  photos: z.array(PhotoSchema).max(POST_PHOTOS_MAX, `${POST_PHOTOS_MAX} photos maximum`),
+  serviceId: id.optional(),
+  employeeId: id.optional(),
+  promo: z.object({
+    discountPercent: z.number().int().min(5, "Remise de 5 % minimum").max(90, "Remise de 90 % maximum"),
+    until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  }).optional(),
+});
+
+/** Publishes a post on the salon's wall. */
+export async function createPostAction(centerSlug: string, input: z.input<typeof PostSchema>) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "post.manage");
+    const data = PostSchema.parse(input);
+    const text = data.text.trim() ? cleanText(data.text, POST_TEXT_MAX, "Le texte") : "";
+    if (!text && !data.photos.length) throw new DashError("Ajoutez un texte ou au moins une photo.");
+    if (data.kind === "before_after" && data.photos.length === 1) throw new DashError("Avant / Après : ajoutez 2 photos, l'avant puis l'après.");
+    if (data.kind === "promo" && !data.promo) throw new DashError("Indiquez le pourcentage de remise de l'offre.");
+    const folder = `hajemti/centers/${center.id}`;
+    if (!data.photos.every((p) => isOwnUpload(p.url, folder))) throw new DashError("Photo refusée : elle doit être envoyée depuis votre espace pro.");
+    const [services, staff] = await Promise.all([listServices(center.id), listStaff(center.id)]);
+    if (data.serviceId && !services.some((s) => s.id === data.serviceId && s.isActive)) throw new DashError("Prestation introuvable");
+    if (data.employeeId && !staff.some((s) => s.id === data.employeeId)) throw new DashError("Membre de l'équipe introuvable");
+    const post = await createPost(center.id, { id: actor.id }, {
+      kind: data.kind, text, photos: data.photos, serviceId: data.serviceId, employeeId: data.employeeId,
+      promo: data.kind === "promo" ? data.promo : undefined,
+    });
+    audit(actor, "post.create", center.id, { type: "post", id: post.id });
+    refresh(center.slug, true);
+    return post;
+  });
+}
+
+export async function updatePostAction(centerSlug: string, postId: string, patch: { pinned?: boolean; hidden?: boolean }) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "post.manage");
+    const p = z.object({ pinned: z.boolean().optional(), hidden: z.boolean().optional() }).parse(patch);
+    await updatePost(center.id, id.parse(postId), p);
+    audit(actor, "post.update", center.id, { type: "post", id: postId }, p);
+    refresh(center.slug, true);
+  });
+}
+
+export async function deletePostAction(centerSlug: string, postId: string) {
+  return run(async () => {
+    const { actor, center } = await guard(slug.parse(centerSlug), "post.manage");
+    await deletePost(center.id, id.parse(postId));
+    audit(actor, "post.delete", center.id, { type: "post", id: postId });
+    refresh(center.slug, true);
   });
 }

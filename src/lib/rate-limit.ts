@@ -9,6 +9,10 @@ export const LIMITS = {
   booking: { limit: 20, windowMs: 60_000 },
   search: { limit: 120, windowMs: 60_000 },
   chat: { limit: 60, windowMs: 60_000 },
+  /** Per user: comments on salon walls (anti-spam). */
+  comment: { limit: 8, windowMs: 60_000 },
+  /** Per user: reactions on salon walls. */
+  react: { limit: 60, windowMs: 60_000 },
   default: { limit: 300, windowMs: 60_000 },
 } as const;
 export type LimitKey = keyof typeof LIMITS;

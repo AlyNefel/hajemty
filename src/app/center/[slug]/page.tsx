@@ -5,6 +5,7 @@ import { getCenterBySlug, listCenterSlugs } from "@/lib/repositories/centers";
 import { SITE_URL } from "@/lib/utils";
 import { CenterSite } from "@/components/center/CenterSite";
 import { listCenterReviews } from "@/lib/reviews/repo";
+import { countPosts } from "@/lib/wall/repo";
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export const revalidate = 300;
@@ -46,7 +47,7 @@ export default async function CenterPage({ params }: Params) {
   if (!c) notFound();
 
   const url = `${SITE_URL}/center/${c.slug}`;
-  const { items, total, stats } = await listCenterReviews(c.id, { limit: 6 });
+  const [{ items, total, stats }, postCount] = await Promise.all([listCenterReviews(c.id, { limit: 6 }), countPosts(c.id)]);
   const reviews = { items: items.map(({ customerId: _c, bookingId: _b, ...r }) => r), total, stats };
   return (
     <>
@@ -79,7 +80,7 @@ export default async function CenterPage({ params }: Params) {
           },
         ]}
       />
-      <CenterSite c={c} reviews={reviews} />
+      <CenterSite c={c} reviews={reviews} postCount={postCount} />
     </>
   );
 }

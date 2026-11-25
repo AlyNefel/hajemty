@@ -61,22 +61,52 @@ MessageSchema.index({ conversationId: 1, _id: -1 });
 MessageSchema.index({ clientId: 1 }, { unique: true });
 
 /* ---------- Social ---------- */
+const WallMediaSchema = new Schema({ url: String, publicId: String, w: Number, h: Number, alt: String }, { _id: false });
+const ReactionCountsSchema = new Schema(
+  { love: { type: Number, default: 0 }, wow: { type: Number, default: 0 }, want: { type: Number, default: 0 }, clap: { type: Number, default: 0 } },
+  { _id: false },
+);
+/** A post on the center's "Mur" (src/lib/wall). Counters are kept in step with the reaction/comment collections. */
 const PostSchema = new Schema(
   {
     centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    type: { type: String, enum: ["post", "promotion", "event", "announcement", "video"], default: "post" },
-    body: { fr: String, ar: String, en: String },
-    media: { type: [{ publicId: String, type: { type: String }, _id: false }], default: [] },
-    promo: { serviceIds: [Schema.Types.ObjectId], discountPercent: Number, validFrom: Date, validTo: Date, code: String },
-    event: { startsAt: Date, location: String },
-    stats: { likes: { type: Number, default: 0 }, comments: { type: Number, default: 0 }, shares: { type: Number, default: 0 } },
-    visibility: { type: String, enum: ["public", "followers"], default: "public" },
+    kind: { type: String, enum: ["work", "before_after", "promo", "news"], default: "work" },
+    text: { type: String, maxlength: 2000, default: "" },
+    photos: { type: [WallMediaSchema], default: [] },
+    serviceId: { type: Schema.Types.ObjectId, ref: "Service" },
+    employeeId: { type: Schema.Types.ObjectId, ref: "Employee" },
+    promo: { discountPercent: Number, until: Date },
+    pinned: { type: Boolean, default: false },
+    status: { type: String, enum: ["visible", "hidden"], default: "visible" },
+    stats: { reactions: { type: ReactionCountsSchema, default: () => ({}) }, comments: { type: Number, default: 0 } },
   },
   { timestamps: true },
 );
-PostSchema.index({ centerId: 1, createdAt: -1 });
-PostSchema.index({ type: 1, "promo.validTo": 1 });
+PostSchema.index({ centerId: 1, status: 1, pinned: -1, createdAt: -1 });
+
+/** One reaction per user per post: _id = "{postId}:{userId}". */
+const PostReactionSchema = new Schema(
+  { _id: String, postId: { type: Schema.Types.ObjectId, required: true }, userId: { type: Schema.Types.ObjectId, required: true }, type: { type: String, enum: ["love", "wow", "want", "clap"], required: true } },
+  { timestamps: true },
+);
+PostReactionSchema.index({ postId: 1 });
+
+const PostCommentSchema = new Schema(
+  {
+    postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+    centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // Snapshot, like reviews: the thread reads the same if the user renames.
+    authorName: { type: String, required: true },
+    isCenter: { type: Boolean, default: false },
+    verifiedClient: { type: Boolean, default: false },
+    text: { type: String, required: true, maxlength: 1000 },
+    status: { type: String, enum: ["visible", "hidden"], default: "visible" },
+  },
+  { timestamps: true },
+);
+PostCommentSchema.index({ postId: 1, status: 1, createdAt: -1 });
 
 const StorySchema = new Schema(
   { centerId: { type: Schema.Types.ObjectId, required: true }, media: { publicId: String, type: { type: String } }, expiresAt: { type: Date, required: true } },
@@ -144,6 +174,8 @@ export const Review = models.Review ?? model("Review", ReviewSchema);
 export const Conversation = models.Conversation ?? model("Conversation", ConversationSchema);
 export const Message = models.Message ?? model("Message", MessageSchema);
 export const Post = models.Post ?? model("Post", PostSchema);
+export const PostReaction = models.PostReaction ?? model("PostReaction", PostReactionSchema);
+export const PostComment = models.PostComment ?? model("PostComment", PostCommentSchema);
 export const Story = models.Story ?? model("Story", StorySchema);
 export const Follow = models.Follow ?? model("Follow", FollowSchema);
 export const LoyaltyEntry = models.LoyaltyEntry ?? model("LoyaltyEntry", LoyaltyEntrySchema);
